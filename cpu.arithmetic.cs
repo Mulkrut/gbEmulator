@@ -1,97 +1,7 @@
-public class CPU
+public class CPU_arithmetic
 {
 
-    //Impletemention of the registers and flags.
-    //Followed by adding the operations based on http://gameboy.mongenel.com/dmg/opcodes.html
-    // and https://github.com/BotRandomness/CODE-DMG/blob/master/src/CPU.cs#L2235
-
-    // 8-bit registers
-    public byte A, B, C, D, E, H, L, F;
-
-    // 16-bit registers
-    public ushort PC;   //program counter
-    public ushort SP;   //stack pointer
-
-    public ushort AF => (ushort)((A << 8) | F);
-    public ushort BC => (ushort)((B << 8) | C);
-    public ushort DE => (ushort)((D << 8) | E);
-    public ushort HL => (ushort)((H << 8) | L);
-
-
-
-    //
-    public bool IME; //interrupt master enable flag
-    private bool halted;
-    private MMU mmu; //memory-management unit object
-
-
-    //Init
-    public CPU(MMU mmu)
-    {
-        A = B = C = D = E = H = L = F = 0;
-        PC = 0x0000;
-        SP = 0x0000; //Boot Rom will set this to 0xFFFE
-        IME = false;
-
-        this.mmu = mmu;
-
-        Console.WriteLine("CPU init");
-    }
-
-
-
-    //The flag F (ZNHC0000)
-    //Zero, Negative, Half carry, Carry
-    public bool GetZFlag() => (F & FLAG_Z) != 0;
-    public bool GetNFlag() => (F & FLAG_N) != 0;
-    public bool GetHFlag() => (F & FLAG_H) != 0;
-    public bool GetCFlag() => (F & FLAG_C) != 0;
-
-    public void SetZFlag(bool value)
-    {
-        if (value) F |= FLAG_Z;
-        else F &= unchecked((byte)~FLAG_Z);
-    }
-
-    public void SetNFlag(bool value)
-    {
-        if (value) F |= FLAG_N;
-        else F &= unchecked((byte)~FLAG_N);
-    }
-
-    public void SetHFlag(bool value)
-    {
-        if (value) F |= FLAG_H;
-        else F &= unchecked((byte)~FLAG_H);
-    }
-
-    public void SetCFlag(bool value)
-    {
-        if (value) F |= FLAG_C;
-        else F &= unchecked((byte)~FLAG_C);
-    }
-
-
-    //Operations and their blocks based on https://gbdev.io/pandocs/CPU_Instruction_Set.html
-
-    //Block 0
-    private byte Nop()
-    {
-        return 4;
-    }
-
-
-    //Block 1 - 8-bit register-to-register loads
-
-    private byte ld8(byte a, byte value) 
-    {
-        //TODO: Implement the exception for ld[hl],[hl]
-        byte r = value;//(s=r,n,(HL) || d=r,(HL))
-
-        return r;
-    }
-
-    //Block 2 - 8-bit arithmetic
+  //Block 2 - 8-bit arithmetic
 
     private byte Add8(byte a, byte b)
     {
@@ -217,24 +127,5 @@ public class CPU
         SetNFlag(true);
         SetHFlag((a & 0x0F) == 0x00);
         return r;
-    }
-
-    //Block 3
-
-
-    //imm8
-    private byte FetchByte() 
-    {
-        byte value = mmu.ReadByte(PC);
-        PC++;
-        return value;
-    }
-
-    //like above but returns 2 bytes added together (ex 0x34 + 0x12 = 0x1234)
-    private ushort FetchWord()
-    {
-        byte low = FetchByte();
-        byte high = FetchByte();
-        return (ushort)(low | (high << 8));
     }
 }
