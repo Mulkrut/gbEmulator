@@ -21,7 +21,7 @@ public partial class CPU
     public ushort AF
     {
         get => (ushort)((A << 8) | F);
-        set => (A, F) = ((byte)(value >> 8), (byte)value);
+        set => (A, F) = ((byte)(value >> 8), (byte)(value & 0x0F));
     }
     public ushort BC
     {

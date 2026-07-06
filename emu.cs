@@ -19,10 +19,10 @@ public class Emu
         }
     }
 
-    /**
+    /*
     TODO:
     private Cartridge LoadCartridge(string path);
     private void Initialize(string romPath);
     private void MainLoop();
-    **/
+    */
 }
