@@ -1,4 +1,4 @@
-public class CPU
+public partial class CPU
 {
 
     //Impletemention of the registers and flags.
@@ -7,6 +7,12 @@ public class CPU
 
     // 8-bit registers
     public byte A, B, C, D, E, H, L, F;
+
+    //Declaring the flags location in the F register
+    private const byte FLAG_Z = 0x80; // 1000 0000
+    private const byte FLAG_N = 0x40; // 0100 0000
+    private const byte FLAG_H = 0x20; // 0010 0000
+    private const byte FLAG_C = 0x10; // 0001 0000
 
     // 16-bit registers
     public ushort PC;   //program counter
@@ -22,18 +28,19 @@ public class CPU
     //
     public bool IME; //interrupt master enable flag
     private bool halted;
-    private MMU mmu; //memory-management unit object
+    // private MMU mmu; //memory-management unit object
 
+    private readonly Bus bus;
 
     //Init
-    public CPU(MMU mmu)
+    public CPU(Bus bus)
     {
         A = B = C = D = E = H = L = F = 0;
         PC = 0x0000;
         SP = 0x0000; //Boot Rom will set this to 0xFFFE
         IME = false;
 
-        this.mmu = mmu;
+        this.bus = bus;
 
         Console.WriteLine("CPU init");
     }
@@ -75,9 +82,15 @@ public class CPU
     //Operations and their blocks based on https://gbdev.io/pandocs/CPU_Instruction_Set.html
 
     //Block 0
-    private byte Nop()
+    private int Nop()
     {
         return 4;
+    }
+
+    private void JpA16()
+    {
+        ushort addr = FetchWord();
+        PC = addr;
     }
 
 
@@ -91,141 +104,14 @@ public class CPU
         return r;
     }
 
-    //Block 2 - 8-bit arithmetic
-
-    private byte Add8(byte a, byte b)
-    {
-        int result = a + b;
-        byte r = (byte)result; //converting from int to byte
-
-        SetZFlag(r == 0);
-        SetNFlag(false);
-        SetHFlag(((a & 0x0F) + (b & 0x0F)) > 0x0F); //0x0F = 00001111
-        SetCFlag(result > 0xFF);
-
-        return r;
-    }
-    
-    private byte Adc8(byte a, byte b)
-    {
-        int carryIn = GetCFlag() ? 1 : 0;
-        int result = a + b + carryIn;
-        byte r = (byte)result;
-
-        SetZFlag(r == 0);
-        SetNFlag(false);
-        SetHFlag(((a & 0x0F) + (b & 0x0F) + carryIn) > 0x0F);
-        SetCFlag(result > 0xFF);
-
-        return r;
-    }
-    
-    private byte Sub8(byte a, byte b)
-    {
-        int result = a - b;
-        byte r = (byte)result;
-
-        SetZFlag(r == 0);
-        SetNFlag(true);
-        SetHFlag((a & 0x0F) < (b & 0x0F));
-        SetCFlag(a < b);
-
-        return r;
-    }
-
-    private byte Sbc8(byte a, byte b)
-    {
-        int carryIn = GetCFlag() ? 1 : 0;
-        int result = a - b - carryIn;
-        byte r = (byte)result;
-
-        SetZFlag(r == 0);
-        SetNFlag(true);
-        SetHFlag((a & 0x0F) < ((b & 0x0F) + carryIn));
-        SetCFlag(a < b + carryIn);
-
-        return r;
-    }
-
-    private byte And8(byte a, byte b)
-    {
-        int result = a & b;
-        byte r = (byte)result;
-
-        SetZFlag(r == 0);
-        SetNFlag(false);
-        SetHFlag(true);
-        SetCFlag(false);
-
-        return r;
-    }
-
-    private byte Or8(byte a, byte b)
-    {
-        int result = a | b;
-        byte r = (byte)result;
-
-        SetZFlag(r == 0);
-        SetNFlag(false);
-        SetHFlag(false);
-        SetCFlag(false);
-
-        return r;
-    }
-
-    private byte Xor8(byte a, byte b)
-    {
-        int result = a ^ b;
-        byte r = (byte)result;
-
-        SetZFlag(r == 0);
-        SetNFlag(false);
-        SetHFlag(false);
-        SetCFlag(false);
-        return r;
-    }
-
-    //Uses to compare, like subtract except you dont return a
-    private void Cp8(byte a, byte b)
-    {
-        int result = a - b;
-        byte r = (byte)result;
-
-        SetZFlag(r == 0);
-        SetNFlag(true);
-        SetHFlag((a & 0x0F) < (b & 0x0F));
-        SetCFlag(a < b);
-    }
-
-    private byte Inc8(byte a) 
-    {
-        int result = a++;
-        byte r = (byte)result;
-
-        SetZFlag(r == 0);
-        SetNFlag(false);
-        SetHFlag((a & 0x0F) == 0x0F);
-        return r;
-    }
-
-    private byte Dec8(byte a) 
-    {
-        int result = a--;
-        byte r = (byte)result;
-
-        SetZFlag(r == 0);
-        SetNFlag(true);
-        SetHFlag((a & 0x0F) == 0x00);
-        return r;
-    }
-
+  
     //Block 3
 
 
     //imm8
     private byte FetchByte() 
     {
-        byte value = mmu.ReadByte(PC);
+        byte value = bus.ReadByte(PC);
         PC++;
         return value;
     }

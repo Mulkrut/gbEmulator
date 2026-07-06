@@ -1,28 +1,21 @@
+using System;
 
-
-class EMU 
+public class Emu
 {
+    public byte[]? GameRom;
+    public byte[]? BootRom;
 
-    public byte[] gameRom;
-    public byte[] bootRom;
-
-
-    public void EmuRun()
+    public void Run(string[] args)
     {
-        //checks if a rom file is inputted
-        if (argc < 2) return -1;
-        //loads in the rom, error if failure
-        if (!cart_load(argv[1])) return -2;
-   
-
-        //init
-
-        //Main loop
-        while (!Raylib.WindowShouldClose())
+        if (args.Length < 1)
         {
-            Raylib.BeginDrawing();
+            Console.WriteLine("Usage: gbEmulator <rom file>");
+            return;
         }
 
-
+        while (true)
+        {
+            break;
+        }
     }
 }

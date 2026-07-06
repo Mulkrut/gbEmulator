@@ -1,4 +1,4 @@
-public class CPU_arithmetic
+public partial class CPU
 {
 
   //Block 2 - 8-bit arithmetic

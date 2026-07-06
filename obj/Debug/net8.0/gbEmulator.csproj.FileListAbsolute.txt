@@ -1,5 +1,0 @@
-C:\Users\Anders\Documents\gbEmulator\obj\Debug\net8.0\gbEmulator.GeneratedMSBuildEditorConfig.editorconfig
-C:\Users\Anders\Documents\gbEmulator\obj\Debug\net8.0\gbEmulator.AssemblyInfoInputs.cache
-C:\Users\Anders\Documents\gbEmulator\obj\Debug\net8.0\gbEmulator.AssemblyInfo.cs
-C:\Users\Anders\Documents\gbEmulator\obj\Debug\net8.0\gbEmulator.csproj.CoreCompileInputs.cache
-C:\Users\Anders\Documents\gbEmulator\obj\Debug\net8.0\gbEmulator.sourcelink.json
