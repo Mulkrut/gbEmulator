@@ -1,9 +1,15 @@
 public partial class CPU
 {
+    //Main document to learn how the cpu works:
+    //https://robertovaccari.com/blog/2020_09_26_gameboy/
+
+
 
     //Impletemention of the registers and flags.
     //Followed by adding the operations based on http://gameboy.mongenel.com/dmg/opcodes.html
     // and https://github.com/BotRandomness/CODE-DMG/blob/master/src/CPU.cs#L2235
+
+
 
     // 8-bit registers
     public byte A, B, C, D, E, H, L, F;
@@ -18,10 +24,26 @@ public partial class CPU
     public ushort PC;   //program counter
     public ushort SP;   //stack pointer
 
-    public ushort AF => (ushort)((A << 8) | F);
-    public ushort BC => (ushort)((B << 8) | C);
-    public ushort DE => (ushort)((D << 8) | E);
-    public ushort HL => (ushort)((H << 8) | L);
+    public ushort AF
+    {
+        get => (ushort)((A << 8) | F);
+        set => (A, F) = ((u8)(value >> 8), (u8)value);
+    }
+    public ushort BC
+    {
+        get => (ushort)((B << 8) | C);
+        set => (B, C) = ((u8)(value >> 8), (u8)value);
+    }
+        public ushort DE
+    {
+        get => (ushort)((D << 8) | E);
+        set => (D, E) = ((u8)(value >> 8), (u8)value);
+    }
+        public ushort HL
+    {
+        get => (ushort)((H << 8) | L);
+        set => (H, L) = ((u8)(value >> 8), (u8)value);
+    }
 
 
 
