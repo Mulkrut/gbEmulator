@@ -16,6 +16,7 @@ public class Bus
     public byte ReadByte(ushort addr)
     {
         //STUFF
+        return 0xFF; //temp fix until i add the functionality
     }
 
     public void WriteByte(ushort addr, byte value)

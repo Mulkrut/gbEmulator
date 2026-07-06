@@ -109,8 +109,7 @@ public partial class CPU
 
     private byte Inc8(byte a) 
     {
-        int result = a++;
-        byte r = (byte)result;
+        byte r = (byte)(a + 1);
 
         SetZFlag(r == 0);
         SetNFlag(false);
@@ -120,8 +119,7 @@ public partial class CPU
 
     private byte Dec8(byte a) 
     {
-        int result = a--;
-        byte r = (byte)result;
+        byte r = (byte)(a - 1);
 
         SetZFlag(r == 0);
         SetNFlag(true);

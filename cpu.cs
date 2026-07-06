@@ -45,8 +45,6 @@ public partial class CPU
         Console.WriteLine("CPU init");
     }
 
-
-
     //The flag F (ZNHC0000)
     //Zero, Negative, Half carry, Carry
     public bool GetZFlag() => (F & FLAG_Z) != 0;
@@ -79,6 +77,11 @@ public partial class CPU
     }
 
 
+    public int Step()
+    {
+        //Next thing to do!
+    }
+
     //Operations and their blocks based on https://gbdev.io/pandocs/CPU_Instruction_Set.html
 
     //Block 0
@@ -106,8 +109,6 @@ public partial class CPU
 
   
     //Block 3
-
-
     //imm8
     private byte FetchByte() 
     {
@@ -123,4 +124,18 @@ public partial class CPU
         byte high = FetchByte();
         return (ushort)(low | (high << 8));
     }
+
+
+        /*
+    TODO:
+    private int ExecuteOpcode(byte opcode);
+    private int ExecuteCBOpcode(byte opcode);
+    private void PushWord(ushort value);
+    private ushort PopWord();
+    private void HandleInterrupts();
+    private void SetAF(ushort value);
+    private void SetBC(ushort value);
+    private void SetDE(ushort value);
+    private void SetHL(ushort value);
+    */
 }
