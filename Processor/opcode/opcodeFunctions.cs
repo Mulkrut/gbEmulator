@@ -34,17 +34,18 @@ public partial class CPU
 
     private void Stop()
     {
-
+        throw new NotImplementedException($"Opcode 0x{opcode:X2} not implemented");
     }
 
     private void Halt()
     {
-
+        throw new NotImplementedException($"Opcode 0x{opcode:X2} not implemented");
     }
 
     private byte ExecuteCBOpcode(byte valye)
     {
-        return 0; //TEMP
+        throw new NotImplementedException($"Opcode 0x{opcode:X2} not implemented");
+        return 0; //temp
     }
 
     //Decimal adjust after addition, makes it a number from 0 - 9

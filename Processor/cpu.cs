@@ -10,6 +10,8 @@ public partial class CPU
 
     private readonly Bus bus;
 
+    private int executeTimer = 0;
+
     //Init
     public CPU(Bus bus)
     {
@@ -24,7 +26,21 @@ public partial class CPU
     }
 
 
-    //Operations and their blocks based on https://gbdev.io/pandocs/CPU_Instruction_Set.html
+    //Main loop
+    public void executeNext()
+    {
+        // Only want to execute very 4th tick
+        executeTimer++;
+        if (executeTimer < 4) return;
+        else 
+        {
+            executeTimer = 0;
+        }
+
+
+
+
+    }
 
 
 
