@@ -2,6 +2,27 @@
 A project for learning the fundamentals of how a gameboy works.
 
 
+My main goal for starting this project was to become a better programmer.
+During the process my use of AI was kept to a minimal.
+
+While i am not expecting a perfect emulator that can compare to the ones already available i set myself the goal of being able to
+run simpler games that like tetris and passing most if not all of Blargg's Gameboy hardware test ROMs.
+
+The project is split up in the following parts in order of my process:
+
+    CPU:
+[X]     Registers and flags
+[X]     Functions to read and execute OPCodes
+[ ]     Interrupts
+[ ]     Timers
+[ ]     Bus for reading the cartride and 
+[ ]     
+
+    GPU
+    Joystick
+    Sound
+
+
 Sources for learning:
 https://cturt.github.io/cinoop.html
 http://gameboy.mongenel.com/dmg/opcodes.html
