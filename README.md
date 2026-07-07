@@ -10,17 +10,17 @@ run simpler games that like tetris and passing most if not all of Blargg's Gameb
 
 The project is split up in the following parts in order of my process:
 
-    CPU:
-[X]     Registers and flags
-[X]     Functions to read and execute OPCodes
-[ ]     Interrupts
-[ ]     Timers
-[ ]     Bus for reading the cartride and 
-[ ]     
+CPU
+    
+    [X]     Registers and flags
+    [X]     Functions to read and execute OPCodes
+    [ ]     Interrupts
+    [ ]     Timers
+    [ ]     Bus for reading the cartride 
 
-    GPU
-    Joystick
-    Sound
+CPU,
+Joystick,
+Sound.
 
 
 Sources for learning:
