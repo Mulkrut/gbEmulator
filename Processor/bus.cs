@@ -11,7 +11,8 @@ public class Bus
     private byte[] io = new byte[0x80];       // fallback
     private byte ieRegister;                  // FFFF   
 
-    private byte interruptFlags;        // FF0F
+    //private byte interruptFlags;        // FF0F
+    //moved to interrupts IF
 
     public Bus(Cartridge cartridge)
     {
@@ -130,7 +131,7 @@ public class Bus
     }
 
     
-
+    //TODO:
     private byte ReadIO(ushort address)
     {
         switch (address)
