@@ -89,20 +89,4 @@ public partial class CPU
         SetCFlag(carry);
     }
 
-    //move to interrupt file later when made
-    private void DisableInterrupts()
-    {
-
-    }
-
-    private void EnableInterrupts()
-    {
-
-    }
-
-    private void EnableInterruptsImmediate()
-    {
-
-    }
-
 }

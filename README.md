@@ -29,3 +29,5 @@ http://gameboy.mongenel.com/dmg/opcodes.html
 https://gbdev.io/
 https://jeremybanks.github.io/0dmg/2018/05/23/getting-started.html
 http://marc.rawer.de/Gameboy/Docs/GBCPUman.pdf
+https://imrannazar.com/series/gameboy-emulation-in-javascript/input
+https://gekkio.fi/files/gb-docs/gbctr.pdf

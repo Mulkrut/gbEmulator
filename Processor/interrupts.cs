@@ -1,4 +1,4 @@
-public class Interrupt
+public partial class CPU
 {
 
 

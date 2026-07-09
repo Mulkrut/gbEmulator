@@ -2,12 +2,6 @@ public partial class CPU
 {
     //Main document to learn how the cpu works:
     //https://robertovaccari.com/blog/2020_09_26_gameboy/
-
-
-    //
-    public bool IME; //interrupt master enable flag
-    
-
     private readonly Bus bus;
 
     private int executeTimer = 0;
@@ -25,7 +19,6 @@ public partial class CPU
         Console.WriteLine("CPU init");
     }
 
-
     //Main loop
     public void executeNext()
     {
@@ -36,6 +29,8 @@ public partial class CPU
         {
             executeTimer = 0;
         }
+
+        //Interrupt logic here
 
 
 

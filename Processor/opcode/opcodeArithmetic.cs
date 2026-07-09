@@ -1,7 +1,6 @@
 public partial class CPU
 {
 
-
     //8-bit arithmetic
     private byte Add8(byte a, byte b)
     {
