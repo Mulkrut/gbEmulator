@@ -16,6 +16,7 @@ public class Timers
     public byte Read(ushort Address)
     {
         //return the type of timer it is
+        return 0;
     }
 
     public void Write(ushort address, byte value)
@@ -36,7 +37,7 @@ public class Timers
         {
             TIMA = TMA;
             //request interrupt
-            RequestInterruption(int 2); //2 = timer, maybe not correct? to dix when i change in the int. file
+            CPU.RequestInterruption(2); //2 = timer, maybe not correct? to fix when i change in the int. file
         }
         else TIMA++;
     }
@@ -44,10 +45,11 @@ public class Timers
     //https://gbdev.io/pandocs/Timer_and_Divider_Registers.html#ff07--tac-timer-control
     public int GetTimaClockSelect()
     {
-        if (TAC & 0b11) == 0b00)        return 4096;
-        else if (TAC & 0b11) == 0b01)   return 262144;
-        else if (TAC & 0b11) == 0b10)   return 65536;
-        else if (TAC & 0b11) == 0b11)   return 16384;
+        if ((TAC & 0b11) == 0b00)        return 4096;
+        else if ((TAC & 0b11) == 0b01)   return 262144;
+        else if ((TAC & 0b11) == 0b10)   return 65536;
+        else if ((TAC & 0b11) == 0b11)   return 16384;
+        else return -1;
     }
 
     private bool TimerEnabled()

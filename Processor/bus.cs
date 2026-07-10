@@ -13,11 +13,13 @@ public class Bus
 
     //private byte interruptFlags;        // FF0F
     //moved to interrupts IF
+    private readonly Timers timer;
 
     public Bus(Cartridge cartridge)
     {
         this.cartridge = cartridge;
         this.rom = cartridge.rom;
+        this.timer = new Timers(() => CPU.IF != (1 << 2)); //fix
     }
 
     /*
@@ -30,7 +32,7 @@ public class Bus
     A000-BFFF: cartridge RAM
     C000-DFFF: WRAM
     E000-FDFF: echo of WRAM
-    FE00-FE9F: OAM (object attribute memory)
+    FE00-FE9F: OAM (object attribute memory) (sprites)
     FF00-FF7F: I/O registers
     FF80-FFFE: HRAM
     FFFF: interrupt enable register*/
@@ -137,11 +139,11 @@ public class Bus
     {
         switch (address)
         {
-            case 0xFF04: return div;
-            case 0xFF05: return tima;
-            case 0xFF06: return tma;
-            case 0xFF07: return tac;
-            case 0xFF0F: return interruptFlags;
+            case 0xFF04: return timer.DIV;
+            case 0xFF05: return timer.TIMA;
+            case 0xFF06: return timer.TMA;
+            case 0xFF07: return timer.TAC;
+            case 0xFF0F: return CPU.IF;
             default:     return io[address - 0xFF00];
         }
     }
@@ -151,23 +153,23 @@ public class Bus
         switch (address)
         {
             case 0xFF04:
-                div = 0; // writing any value resets DIV
+                timer.DIV = 0; // writing any value resets DIV
                 break;
 
             case 0xFF05:
-                tima = value;
+                timer.TIMA = value;
                 break;
 
             case 0xFF06:
-                tma = value;
+                timer.TMA = value;
                 break;
 
             case 0xFF07:
-                tac = (byte)(value & 0x07); // only bits 0-2 are used
+                timer.TAC = (byte)(value & 0x07); // only bits 0-2 are used
                 break;
 
             case 0xFF0F:
-                interruptFlags = (byte)(value & 0x1F); // only low 5 interrupt bits
+                CPU.IF = (byte)(value & 0x1F); // only low 5 interrupt bits
                 break;
 
             default:
@@ -196,7 +198,7 @@ public class Bus
 
     private byte ReadRomBanked(ushort address)
     {
-        if (address >= rom.length) return 0xFF;
+        if (address >= rom.Length) return 0xFF;
         else return rom[address];
     }
 
@@ -208,6 +210,6 @@ public class Bus
     //maybe put into interrupts
     public void RequestInterrupt(int bit)
     {
-        interruptFlags |= (byte)(1 << bit);
+        CPU.IF |= (byte)(1 << bit);
     }
 }

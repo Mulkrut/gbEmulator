@@ -57,7 +57,7 @@ public partial class CPU
             case 0x10: Stop(); return 4; // STOP
             case 0xCB: return ExecuteCBOpcode(Fetch8());
             case 0xF3: DisableInterrupts(); return 4; // DI
-            case 0xFB: EnableInterrupts(); return 4; // EI
+            case 0xFB: EnableInterrupts(true); return 4; // EI
             case 0x76: Halt(); return 4; // HALT safety
 
             // =====================================================================
@@ -233,7 +233,7 @@ public partial class CPU
             case 0xC9: PC = Pop16(); return 16;
             case 0xD9:
                 PC = Pop16();
-                EnableInterruptsImmediate();
+                EnableInterrupts(false);
                 return 16;
 
             case 0xC0: return ReturnConditional(!GetZFlag());

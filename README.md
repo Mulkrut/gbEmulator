@@ -17,9 +17,11 @@ CPU
     [ ]     Interrupts
     [ ]     Timers
     [ ]     Bus for reading the cartride 
+    [ ]     Cartride loading and header reading
 
-CPU,
-Joystick,
+GPU,
+PPU,
+Joystick IO control,
 Sound.
 
 

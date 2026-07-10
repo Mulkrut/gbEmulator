@@ -11,8 +11,8 @@ public partial class CPU
     public int pendingEnable = -1;
     public int pendingDisable = -1;
 
-    private byte IE { get; set; }
-    private byte IF { get; set; }
+    public byte IE { get; set; }
+    public byte IF { get; set; }
 
     // IE = granular interrupt enabler. When bits are set, the corresponding interrupt can be triggered
     // IF = When bits are set, an interrupt has happened
@@ -38,7 +38,7 @@ public partial class CPU
 
     public void EnableInterrupts(bool withDelay)
     {
-        if (withDelay = true)
+        if (withDelay == true)
         {
             if (pendingEnable == -1) pendingEnable = 1;
         }
@@ -54,29 +54,29 @@ public partial class CPU
     {
         pendingEnable = -1;
         pendingDisable = -1;
-        IME = false
+        IME = false;
     }
 
-    public void RequestInterruption(int interruption)
+    public void RequestInterruption(byte interruption)
     {
         IF |= ((byte)(1 << interruption));
     }
 
-    public void ClearInterruption(int interruption)
+    public void ClearInterruption(byte interruption)
     {
         IF &= ~((byte)(1 << interruption));
     }
 
-    public int getInterruptType()
+    public byte getInterruptType()
     {
-        int interruptType = -1;
+        byte interruptType = 0x00;
 
         //goes through bit 0 - 4 of IF to find the type
-        for (int i = 0; i < 5; i++)
+        for (byte i = 0; i < 5; i++)
         {
-            if ((IF >> i) & 0x01 == 1)
+            if (((IF >> i) & 0x01) == 0x01)
             {
-                interruptType =i;
+                interruptType = i;
                 break;
             }
         }
@@ -87,25 +87,25 @@ public partial class CPU
     {
         //IF |= (1 << 3);
 
-        int interruptType = getInterruptType();
+        byte interruptType = getInterruptType();
 
 
         //endgoal:
         IME = true;
-        CPU.Push16(CPU.PC);
+        Push16(PC);
 
         //figure out a smarter way to do this with the list?
-        if (interruptType == 0) CPU.PC = 0x0040;
-        else if (interruptType == 1) CPU.PC = 0x0048;
-        else if (interruptType == 2) CPU.PC = 0x0050;
-        else if (interruptType == 3) CPU.PC = 0x0058;
-        else if (interruptType == 4) CPU.PC = 0x0060;
-        else CPU.stop(); //Error
+        if (interruptType == 0) PC = 0x0040;
+        else if (interruptType == 1) PC = 0x0048;
+        else if (interruptType == 2) PC = 0x0050;
+        else if (interruptType == 3) PC = 0x0058;
+        else if (interruptType == 4) PC = 0x0060;
+        //else stop(); //Error
 
         //todo:
         //doHandleRoutine(interruptType);
 
-        CPU.Pop16(PC);
+        Pop16();
         DisableInterrupts();
     }
 

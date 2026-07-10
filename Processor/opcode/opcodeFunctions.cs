@@ -34,17 +34,16 @@ public partial class CPU
 
     private void Stop()
     {
-        throw new NotImplementedException($"Opcode 0x{opcode:X2} not implemented");
+        //todo
     }
 
     private void Halt()
     {
-        throw new NotImplementedException($"Opcode 0x{opcode:X2} not implemented");
+        //todo
     }
 
     private byte ExecuteCBOpcode(byte valye)
     {
-        throw new NotImplementedException($"Opcode 0x{opcode:X2} not implemented");
         return 0x01; //temp
     }
 

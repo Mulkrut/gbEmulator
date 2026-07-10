@@ -1,6 +1,6 @@
 public class Cartridge
 {
-    private readonly byte[] rom;
+    public readonly byte[] rom;
     private readonly byte[] eram = new byte[0x2000]; //the save
 
     public byte[] Rom => rom;
@@ -14,7 +14,6 @@ public class Cartridge
 
     public bool HasRam { get; }
     public bool HasBattery { get; }
-
 
     public Cartridge(byte[] rom)
     {
@@ -31,11 +30,32 @@ public class Cartridge
         HasBattery = CartridgeHasBattery(CartridgeType);
     }
 
+
+    public void CartrideInfoToConsole()
+    {
+        Console.WriteLine(Cartridge.Title);
+        Console.WriteLine(Cartridge.CartridgeType);
+        Console.WriteLine(GetRomSizeBytes(RomSizeCode));
+        Console.WriteLine("Has ram: " + HasRam);
+        Console.WriteLine(GetRamSizeBytes(RamSizeCode));
+        Console.WriteLine("Has battery: " + HasBattery);
+
+        Console.WriteLine("Passed checksum: " + CartrideChecksum());
+    }
+
+    //return a string going from 0x0134 to 0x0143, breaking if a character == 0x00.
     public string ReadTitle(byte[] rom)
     {
-        //todo
-
-        //return a string going from 0x0134 to 0x0143, breaking if a character == 0x00.
+        string CartrideName = "";
+        
+        for (int i = 0; i < 16; i++)
+        {
+            int charAddress = 0x134 + i;
+            if (charAddress == 0x00) break;
+            else CartrideName.Append((char)rom[charAddress]);
+        }
+        
+        return CartrideName;
     }
 
     public bool isRomOnly()
@@ -60,14 +80,13 @@ public class Cartridge
             case 0x06: return 2 * kbit;
             case 0x07: return 4 * mbit;
             case 0x08: return 8 * mbit;
-            default: stop(); //temp, write to terminal and find a fallback
+            default: return -1; //temp, write to terminal and find a fallback
         }
     }
 
-public int getRamSizeBytes(byte RamSizeCode)
+public int GetRamSizeBytes(byte RamSizeCode)
     {
         int kbit = 1024;
-        int mbit = 1048576;
         switch (RomSizeCode)
         {
             case 0x00: return 0;
@@ -76,7 +95,7 @@ public int getRamSizeBytes(byte RamSizeCode)
             case 0x03: return 32 * kbit;
             case 0x04: return 128 * kbit;
             case 0x05: return 64 * kbit;
-            default: stop(); //temp, write to terminal and find a fallback
+            default: return -1; //temp, write to terminal and find a fallback
         }
     }
 
@@ -104,7 +123,7 @@ public int getRamSizeBytes(byte RamSizeCode)
         }
     }
 
-        private static bool CartridgeHasBattery(byte cartridgeType)
+    private static bool CartridgeHasBattery(byte cartridgeType)
     {
         switch (cartridgeType)
         {
@@ -122,5 +141,17 @@ public int getRamSizeBytes(byte RamSizeCode)
             default:
                 return false;
         }
+    }
+
+
+    //https://gbdev.io/pandocs/The_Cartridge_Header.html#014d--header-checksum
+    private bool CartrideChecksum()
+    {
+        int checksum = 0;
+        for (int address = 0x0134; address <= 0x014C; address++)
+        {
+            checksum = checksum - rom[address] - 1;
+        }
+        return true;
     }
 }
