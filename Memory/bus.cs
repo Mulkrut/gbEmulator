@@ -1,6 +1,9 @@
 public class Bus
 {
-    private readonly Cartridge cartridge;
+    //Bus or mmu, both is the same
+
+
+    private Cartridge cartridge;
 
     private byte[] rom = Array.Empty<byte>();
     private byte[] vram = new byte[0x2000];   // 8000-9FFF
@@ -19,11 +22,18 @@ public class Bus
     {
         this.cartridge = cartridge;
         this.rom = cartridge.rom;
-        this.timer = new Timers(() => CPU.IF != (1 << 2)); //fix
+        this.timer = timer; //fix
     }
 
+    public void LoadData(string romName)
+    {
+        cartridge = new Cartridge(romName);
+    }
     /*
     Read, write & fetch
+
+
+    https://github.com/rvaccarim/FrozenBoy/blob/master/FrozenBoyCore/Memory/MMU.cs
 
     http://gameboy.mongenel.com/dmg/asmmemmap.html
     0000-3FFF: fixed ROM bank
@@ -41,7 +51,7 @@ public class Bus
     {
         if (address <= 0x3FFF)
         {
-            return rom[address];
+            return cartridge.rom[address];
         }
         else if (address <= 0x7FFF)
         {
@@ -180,7 +190,10 @@ public class Bus
 
     private byte ReadExternalRam(ushort address)
     {
+        if (!cartridge.HasRam) return 0xFF;
+
         int offset = address - 0xA000;
+        byte[] eram = cartridge.Eram;
 
         if (offset < 0 || offset >= eram.Length)
             return 0xFF;
@@ -188,12 +201,16 @@ public class Bus
         return eram[offset];
     }
 
-    private void WriteExternalRam(ushort address, byte value) 
+private void WriteExternalRam(ushort address, byte value)
     {
+        if (!cartridge.HasRam) return;
+
         int offset = address - 0xA000;
+        byte[] eram = cartridge.Eram;
 
         if (offset < 0 || offset >= eram.Length) return;
-        else eram[offset] = value;
+
+        eram[offset] = value;
     }
 
     private byte ReadRomBanked(ushort address)

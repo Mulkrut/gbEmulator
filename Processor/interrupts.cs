@@ -1,4 +1,4 @@
-public partial class CPU
+public partial class InterruptManager
 {
 
 

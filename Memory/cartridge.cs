@@ -15,15 +15,16 @@ public class Cartridge
     public bool HasRam { get; }
     public bool HasBattery { get; }
 
-    public Cartridge(byte[] rom)
+    public Cartridge(string romName)
     {
-        this.rom = rom;
+        byte[] rom = File.ReadAllBytes(romName);
+        
 
         CartridgeType = rom[0x0147];
         RomSizeCode   = rom[0x0148];
         RamSizeCode   = rom[0x0149];
 
-        Title = ReadTitle(rom);
+        Title = ReadTitle();
         eram = new byte[GetRamSizeBytes(RamSizeCode)];
 
         HasRam = CartridgeHasRam(CartridgeType);
@@ -44,15 +45,15 @@ public class Cartridge
     }
 
     //return a string going from 0x0134 to 0x0143, breaking if a character == 0x00.
-    public string ReadTitle(byte[] rom)
+    public string ReadTitle()
     {
         string CartrideName = "";
         
         for (int i = 0; i < 16; i++)
         {
-            int charAddress = 0x134 + i;
-            if (charAddress == 0x00) break;
-            else CartrideName.Append((char)rom[charAddress]);
+            int charAddress = rom[0x134 + i];
+            if (rom[charAddress] == 0x00) break;
+            else CartrideName += (char)(rom[charAddress]);
         }
         
         return CartrideName;
@@ -87,7 +88,7 @@ public class Cartridge
 public int GetRamSizeBytes(byte RamSizeCode)
     {
         int kbit = 1024;
-        switch (RomSizeCode)
+        switch (RamSizeCode)
         {
             case 0x00: return 0;
             case 0x01: return -1; //unused idk if -1 is a good idea?
