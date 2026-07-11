@@ -17,7 +17,7 @@ public partial class CPU
         return (ushort)(lo | (hi << 8));
     }
 
-    private void Push16(ushort value)
+    public void Push16(ushort value)
     {
         SP--;
         bus.WriteByte(SP, (byte)(value >> 8));
@@ -25,7 +25,7 @@ public partial class CPU
         bus.WriteByte(SP, (byte)(value & 0x00FF));
     }
 
-    private ushort Pop16()
+    public ushort Pop16()
     {
         byte lo = bus.ReadByte(SP++);
         byte hi = bus.ReadByte(SP++);

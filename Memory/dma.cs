@@ -1,4 +1,4 @@
-public class Dma
+public class DMA
 {
 
     private BUS bus;

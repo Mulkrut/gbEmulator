@@ -14,17 +14,17 @@ public class Emulator
     public Timer timer;
     
     //taken from the frozenboy, insert other variables to the functions
-    public Emulator()
-    {
-        intManager = new InterruptManager();
-        timer = new Timer(intManager);
-        gpu = new GPU(intManager, gbOptions.Palette);
-        // joypad = new Joypad(intManager);
-        // dma = new Dma();
-        // serial = new SerialLink(intManager);
-        bus = new BUS(timer, intManager, gpu, joypad, dma, serial);
-        cpu = new CPU(bus, timer, intManager, gpu);
-    }
+    // public Emulator()
+    // {
+    //     intManager = new InterruptManager();
+    //     timer = new Timer(intManager);
+    //     gpu = new GPU(intManager, gbOptions.Palette);
+    //     // joypad = new Joypad(intManager);
+    //     // dma = new Dma();
+    //     // serial = new SerialLink(intManager);
+    //     bus = new BUS(timer, intManager, gpu, joypad, dma, serial);
+    //     cpu = new CPU(bus, timer, intManager, gpu);
+    // }
 
 
     //delete?

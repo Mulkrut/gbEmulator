@@ -24,7 +24,7 @@ public class Timers
         //depending on address write the value to said timer
     }
 
-    public void Step(int cycles)
+    public void TimerStep(int cycles)
     {
 
     }
@@ -37,7 +37,7 @@ public class Timers
         {
             TIMA = TMA;
             //request interrupt
-            CPU.RequestInterruption(2); //2 = timer, maybe not correct? to fix when i change in the int. file
+            InterruptManager.RequestInterruption(2); //2 = timer, maybe not correct? to fix when i change in the int. file
         }
         else TIMA++;
     }

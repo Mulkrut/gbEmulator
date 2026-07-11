@@ -1,6 +1,5 @@
-public partial class InterruptManager
+public class InterruptManager
 {
-
 
     public bool IME; //interrupt master enable flag
 
@@ -35,7 +34,20 @@ public partial class InterruptManager
     };
 
 
+    public void OnInstructionFinished() {
+        if (pendingEnable != -1) {
+            if (pendingEnable-- == 0) {
+                EnableInterrupts(false);
+            }
+        }
 
+        if (pendingDisable != -1) {
+            if (pendingDisable-- == 0) {
+                DisableInterrupts();
+            }
+        }
+    }
+    
     public void EnableInterrupts(bool withDelay)
     {
         if (withDelay == true)
@@ -92,20 +104,20 @@ public partial class InterruptManager
 
         //endgoal:
         IME = true;
-        Push16(PC);
+        CPU.Push16(CPU.PC);
 
         //figure out a smarter way to do this with the list?
-        if (interruptType == 0) PC = 0x0040;
-        else if (interruptType == 1) PC = 0x0048;
-        else if (interruptType == 2) PC = 0x0050;
-        else if (interruptType == 3) PC = 0x0058;
-        else if (interruptType == 4) PC = 0x0060;
+        if (interruptType == 0) CPU.PC = 0x0040;
+        else if (interruptType == 1) CPU.PC = 0x0048;
+        else if (interruptType == 2) CPU.PC = 0x0050;
+        else if (interruptType == 3) CPU.PC = 0x0058;
+        else if (interruptType == 4) CPU.PC = 0x0060;
         //else stop(); //Error
 
         //todo:
         //doHandleRoutine(interruptType);
 
-        Pop16();
+        CPU.Pop16();
         DisableInterrupts();
     }
 

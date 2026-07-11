@@ -1,4 +1,4 @@
-public class Bus
+public class BUS
 {
     //Bus or mmu, both is the same
 
@@ -18,7 +18,7 @@ public class Bus
     //moved to interrupts IF
     private readonly Timers timer;
 
-    public Bus(Cartridge cartridge)
+    public BUS(Cartridge cartridge)
     {
         this.cartridge = cartridge;
         this.rom = cartridge.rom;
@@ -153,7 +153,7 @@ public class Bus
             case 0xFF05: return timer.TIMA;
             case 0xFF06: return timer.TMA;
             case 0xFF07: return timer.TAC;
-            case 0xFF0F: return CPU.IF;
+            case 0xFF0F: return InterruptManager.IF;
             default:     return io[address - 0xFF00];
         }
     }
@@ -179,7 +179,7 @@ public class Bus
                 break;
 
             case 0xFF0F:
-                CPU.IF = (byte)(value & 0x1F); // only low 5 interrupt bits
+                InterruptManager.IF = (byte)(value & 0x1F); // only low 5 interrupt bits
                 break;
 
             default:
@@ -227,6 +227,6 @@ private void WriteExternalRam(ushort address, byte value)
     //maybe put into interrupts
     public void RequestInterrupt(int bit)
     {
-        CPU.IF |= (byte)(1 << bit);
+        InterruptManager.IF |= (byte)(1 << bit);
     }
 }
