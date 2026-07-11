@@ -4,6 +4,8 @@ public class BUS
 
 
     private Cartridge cartridge;
+    private readonly Timers timer;
+    private readonly InterruptManager intManager;
 
     private byte[] rom = Array.Empty<byte>();
     private byte[] vram = new byte[0x2000];   // 8000-9FFF
@@ -16,13 +18,13 @@ public class BUS
 
     //private byte interruptFlags;        // FF0F
     //moved to interrupts IF
-    private readonly Timers timer;
 
-    public BUS(Cartridge cartridge)
+    public BUS(Cartridge cartridge, Timer timer, InterruptManager intManager)
     {
         this.cartridge = cartridge;
         this.rom = cartridge.rom;
         this.timer = timer; //fix
+        this.intManager = intManager;
     }
 
     public void LoadData(string romName)
@@ -153,7 +155,7 @@ public class BUS
             case 0xFF05: return timer.TIMA;
             case 0xFF06: return timer.TMA;
             case 0xFF07: return timer.TAC;
-            case 0xFF0F: return InterruptManager.IF;
+            case 0xFF0F: return intManager.IF;
             default:     return io[address - 0xFF00];
         }
     }
@@ -179,7 +181,7 @@ public class BUS
                 break;
 
             case 0xFF0F:
-                InterruptManager.IF = (byte)(value & 0x1F); // only low 5 interrupt bits
+                intManager.RequestInterruption((byte)(value & 0x1F)); // only low 5 interrupt bits
                 break;
 
             default:
@@ -227,6 +229,6 @@ private void WriteExternalRam(ushort address, byte value)
     //maybe put into interrupts
     public void RequestInterrupt(int bit)
     {
-        InterruptManager.IF |= (byte)(1 << bit);
+        intManager.RequestInterruption((byte)bit);
     }
 }

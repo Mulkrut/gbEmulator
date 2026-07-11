@@ -74,9 +74,10 @@ public class InterruptManager
         IF |= ((byte)(1 << interruption));
     }
 
+    //getting cast error here
     public void ClearInterruption(byte interruption)
     {
-        IF &= ~((byte)(1 << interruption));
+        (byte)IF &= ~((byte)(1 << interruption));
     }
 
     public byte getInterruptType()
@@ -95,31 +96,56 @@ public class InterruptManager
         return interruptType;
     }
 
+    public bool InterruptPending()
+    {
+        return (IE & IF & 0x1F) != 0;
+    }
+
     private void interruptStep()
     {
         //IF |= (1 << 3);
+
+        if (InterruptPending() == false) return;
 
         byte interruptType = getInterruptType();
 
 
         //endgoal:
         IME = true;
-        CPU.Push16(CPU.PC);
+        cpu.Push16(cpu.PC);
 
         //figure out a smarter way to do this with the list?
-        if (interruptType == 0) CPU.PC = 0x0040;
-        else if (interruptType == 1) CPU.PC = 0x0048;
-        else if (interruptType == 2) CPU.PC = 0x0050;
-        else if (interruptType == 3) CPU.PC = 0x0058;
-        else if (interruptType == 4) CPU.PC = 0x0060;
+        if (interruptType == 0) cpu.PC = 0x0040;
+        else if (interruptType == 1) cpu.PC = 0x0048;
+        else if (interruptType == 2) cpu.PC = 0x0050;
+        else if (interruptType == 3) cpu.PC = 0x0058;
+        else if (interruptType == 4) cpu.PC = 0x0060;
         //else stop(); //Error
 
         //todo:
         //doHandleRoutine(interruptType);
 
-        CPU.Pop16();
+        cpu.Pop16();
         DisableInterrupts();
     }
+
+
+    //todo:
+    public int GetInterruptVector(int activeInterrupt)
+    {
+        return 0;
+    }
+
+    public int GetPendingInterrupt()
+    {
+        return 0;
+    }
+
+    public bool interruptRequested()
+    {
+        return true;
+    }
+
 
     //beyond the scope of what i want to learn, taken from the FrozenBoy
     public bool IsHaltBug() => (IE & IF & 0x1f) != 0 && !IME;

@@ -5,8 +5,10 @@ public partial class CPU
     //Main document to learn how the cpu works:
     //https://robertovaccari.com/blog/2020_09_26_gameboy/
 
+    //todo: Consistency accrost T and M cycles
+
     public BUS bus;
-    public Timer timer;
+    public Timers timer;
     public InterruptManager intManager;
     public GPU gpu;
 
@@ -18,47 +20,57 @@ public partial class CPU
 
     public InstructionState state;
     private int executeTimer = 0;
+    private int activeInterrupt = -1;
     public bool haltBug;
 
     //Init
-    public CPU(BUS bus)
+    public CPU(BUS bus, Timers timer, InterruptManager intManager, GPU gpu)
     {
         Console.WriteLine("CPU init");
+
+        this.bus = bus;
+        this.timer = timer;
+        this.intManager = intManager;
+        this.gpu = gpu;
 
         A = B = C = D = E = H = L = F = 0;
         PC = 0x0000;
         SP = 0x0000; //Boot Rom will set this to 0xFFFE
         IME = false;
 
-        this.bus = bus;
-        this.timer = timer;
-        this.intManager = intManager;
-        this.gpu = gpu;
+        
         CPUResetRegisters();
         
         this.intManager.IME = false;
-        state = InstructionState.Fetch();
+        state = InstructionState.Fetch;
 
     }
 
     public void CpuStep()
     {
 
-    }
+        timer.TimerStep(1);
+        //gpu
+        //dma
 
-    //Main loop
-    public void executeNext()
-    {
         // Only want to execute very 4th tick
         executeTimer++;
         if (executeTimer < 4) return;
         else 
         {
             executeTimer = 0;
+            executeNext();
         }
 
+    }
+
+    //Main loop
+    public void executeNext()
+    {
+
+
         //Interrupt logic here
-        if (state == InstructionState.Fetch || state == InstructionState.Halted || InstructionState.Stopped)
+        if (state == InstructionState.Fetch || state == InstructionState.Halted || state == InstructionState.Stopped)
         {
             //check for interrupts and set state to InstructionState.IF if true
 
@@ -72,7 +84,8 @@ public partial class CPU
             case InstructionState.Interrupt_Push1:
             case InstructionState.Interrupt_Push2:
             case InstructionState.Interrupt_Jump:
-                //handle interrupt
+                int cycles = HandleInterrupt();
+                timer.TimerStep(cycles * 4);//mCycles therefor i *4, compared to T cycles
                 return;
             case InstructionState.Halted when intManager.interruptRequested():
                 state = InstructionState.Fetch;
@@ -86,42 +99,66 @@ public partial class CPU
 
 
         //main progressor for going through the opcode
-        switch (state)
+        if (intManager.IsHaltBug() == true) 
         {
-            case InstructionState.Fetch:
+            haltBug = false;
+            return;
+        }
+        else
+        {
+            byte opcode = bus.ReadByte(PC++);
+            int cycles = ExecuteBaseOpcode(opcode);
 
-                //checks for haltbug and moves the pointer
-                if (intManager.IsHaltBug() == true) haltBug = false;
-                else PC++;
-
-                //maybe return
-                break;
-
-
-
+            timer.TimerStep(cycles);
+            intManager.OnInstructionFinished();
         }
 
     }
 
 
-    //todo:
-    private void HandleInterrupt()
+    //returns the cycles each state takes.
+    public int HandleInterrupt()
     {
         switch (state)
         {
             case InstructionState.Interrupt_IF:
+                activeInterrupt = intManager.GetPendingInterrupt();
 
-                break;
+                if (activeInterrupt == -1)
+                {
+                    state = InstructionState.Fetch;
+                    return 0;
+                }
+                state = InstructionState.Interrupt_IE;
+                return 1;
+
             case InstructionState.Interrupt_IE:
-                break;
+                intManager.IME = false;
+                state = InstructionState.Interrupt_Push1;
+                return 1;
+
             case InstructionState.Interrupt_Push1:
-                break;
+                SP--;
+                bus.WriteByte(SP, (byte)(PC >> 8));
+                state = InstructionState.Interrupt_Push2;
+                return 1;
+
             case InstructionState.Interrupt_Push2:
-                break;
+                SP--;
+                bus.WriteByte(SP, (byte)(PC & 0x00FF));
+
+                intManager.ClearInterruption((byte)activeInterrupt);
+                state = InstructionState.Interrupt_Jump;
+                return 1;
+
             case InstructionState.Interrupt_Jump:
-                break;
+                PC = intManager.GetInterruptVector(activeInterrupt);
+                activeInterrupt = -1;
+                state = InstructionState.Fetch;
+                return 1;
 
         }
+        return 0;
     }
 
     //move to registers file?

@@ -133,10 +133,9 @@ public partial class CPU
         int result = a + b;
         ushort r = (ushort)result; //converting from int to ushort
 
-        SetZFlag(r == 0);
         SetNFlag(false);
-        SetHFlag(((a & 0x0F) + (b & 0x0F)) > 0x0F); //0x0F = 00001111
-        SetCFlag(result > 0xFF);
+        SetHFlag(((a & 0x0FFF) + (b & 0x0FFF)) > 0x0FFF); //0x0F = 00001111
+        SetCFlag(result > 0xFFFF);
 
         return r;
     }
