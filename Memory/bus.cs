@@ -2,11 +2,11 @@ public class BUS
 {
     //Bus or mmu, both is the same
 
-
     private Cartridge cartridge;
     private readonly Timers timer;
     private readonly InterruptManager intManager;
-
+    public DMA dma { get; }
+    
     private byte[] rom = Array.Empty<byte>();
     private byte[] vram = new byte[0x2000];   // 8000-9FFF
     private byte[] eram = new byte[0x2000];   // A000-BFFF
@@ -19,17 +19,25 @@ public class BUS
     //private byte interruptFlags;        // FF0F
     //moved to interrupts IF
 
-    public BUS(Cartridge cartridge, Timer timer, InterruptManager intManager)
+    //used for the testrom output
+    private byte sb; // FF01
+    private byte sc; // FF02
+
+
+    //maybe dma and hpu is not needed here, just inserted for consistency and to get it to compile
+    public BUS(Cartridge cartridge, Timers timer, InterruptManager intManager, GPU gpu, DMA dma)
     {
         this.cartridge = cartridge;
         this.rom = cartridge.rom;
         this.timer = timer; //fix
         this.intManager = intManager;
+        this.dma = dma;
     }
 
     public void LoadData(string romName)
     {
         cartridge = new Cartridge(romName);
+        rom = cartridge.Rom;
     }
     /*
     Read, write & fetch
@@ -151,6 +159,11 @@ public class BUS
     {
         switch (address)
         {
+            //just for console output from testrom
+            case 0xFF01: return sb;
+            case 0xFF02: return sc;
+
+            //actual ReadIO
             case 0xFF04: return timer.DIV;
             case 0xFF05: return timer.TIMA;
             case 0xFF06: return timer.TMA;
@@ -164,6 +177,22 @@ public class BUS
     {
         switch (address)
         {
+            //just for console output from testrom
+            case 0xFF01:
+            sb = value;
+            break;
+
+            case 0xFF02:
+                sc = value;
+
+                if (sc == 0x81)
+                {
+                    Console.Write((char)sb);
+                    sc = 0x00; // transfer complete for simple test ROM output
+                }
+                break;
+
+            //actual Write
             case 0xFF04:
                 timer.DIV = 0; // writing any value resets DIV
                 break;
@@ -181,7 +210,7 @@ public class BUS
                 break;
 
             case 0xFF0F:
-                intManager.RequestInterruption((byte)(value & 0x1F)); // only low 5 interrupt bits
+                intManager.IF = (byte)(value & 0x1F); // only low 5 interrupt bits
                 break;
 
             default:

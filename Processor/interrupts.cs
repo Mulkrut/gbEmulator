@@ -71,23 +71,24 @@ public class InterruptManager
 
     public void RequestInterruption(byte interruption)
     {
-        IF |= ((byte)(1 << interruption));
+        IF |= (byte)(1 << interruption);
     }
 
     //getting cast error here
     public void ClearInterruption(byte interruption)
     {
-        (byte)IF &= ~((byte)(1 << interruption));
+        IF &= (byte)~((0x01 << interruption));
     }
 
     public byte getInterruptType()
     {
         byte interruptType = 0x00;
+        byte pending = (byte)(IE & IF & 0x1F);
 
         //goes through bit 0 - 4 of IF to find the type
         for (byte i = 0; i < 5; i++)
         {
-            if (((IF >> i) & 0x01) == 0x01)
+            if ((pending & (1 << i)) == 0x01)
             {
                 interruptType = i;
                 break;
@@ -101,49 +102,15 @@ public class InterruptManager
         return (IE & IF & 0x1F) != 0;
     }
 
-    private void interruptStep()
+
+    public ushort GetInterruptVector(int activeInterrupt)
     {
-        //IF |= (1 << 3);
-
-        if (InterruptPending() == false) return;
-
-        byte interruptType = getInterruptType();
-
-
-        //endgoal:
-        IME = true;
-        cpu.Push16(cpu.PC);
-
-        //figure out a smarter way to do this with the list?
-        if (interruptType == 0) cpu.PC = 0x0040;
-        else if (interruptType == 1) cpu.PC = 0x0048;
-        else if (interruptType == 2) cpu.PC = 0x0050;
-        else if (interruptType == 3) cpu.PC = 0x0058;
-        else if (interruptType == 4) cpu.PC = 0x0060;
-        //else stop(); //Error
-
-        //todo:
-        //doHandleRoutine(interruptType);
-
-        cpu.Pop16();
-        DisableInterrupts();
-    }
-
-
-    //todo:
-    public int GetInterruptVector(int activeInterrupt)
-    {
-        return 0;
-    }
-
-    public int GetPendingInterrupt()
-    {
-        return 0;
-    }
-
-    public bool interruptRequested()
-    {
-        return true;
+        if (activeInterrupt == 0)      return 0x0040;
+        else if (activeInterrupt == 1) return 0x0048;
+        else if (activeInterrupt == 2) return 0x0050;
+        else if (activeInterrupt == 3) return 0x0058;
+        else if (activeInterrupt == 4) return 0x0060;
+        else return 0x0000;
     }
 
 

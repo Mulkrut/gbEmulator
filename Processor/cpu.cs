@@ -36,8 +36,6 @@ public partial class CPU
         A = B = C = D = E = H = L = F = 0;
         PC = 0x0000;
         SP = 0x0000; //Boot Rom will set this to 0xFFFE
-        IME = false;
-
         
         CPUResetRegisters();
         
@@ -70,10 +68,22 @@ public partial class CPU
 
 
         //Interrupt logic here
-        if (state == InstructionState.Fetch || state == InstructionState.Halted || state == InstructionState.Stopped)
+        if (state == InstructionState.Fetch)
         {
-            //check for interrupts and set state to InstructionState.IF if true
-
+            if (intManager.IME && intManager.InterruptPending())
+            {
+                state = InstructionState.Interrupt_IF;
+            }
+        }
+        else if (state == InstructionState.Halted)
+        {
+            if (intManager.InterruptPending())
+            {
+                state = intManager.IME ? InstructionState.Interrupt_IF : InstructionState.Fetch;
+            }
+        }
+        else if (state == InstructionState.Stopped)
+        {
             return;
         }
 
@@ -84,10 +94,10 @@ public partial class CPU
             case InstructionState.Interrupt_Push1:
             case InstructionState.Interrupt_Push2:
             case InstructionState.Interrupt_Jump:
-                int cycles = HandleInterrupt();
-                timer.TimerStep(cycles * 4);//mCycles therefor i *4, compared to T cycles
+                int cyclesForHandling = HandleInterrupt(); //long var name cause stupid compiler
+                timer.TimerStep(cyclesForHandling * 4);//mCycles therefor i *4, compared to T cycles
                 return;
-            case InstructionState.Halted when intManager.interruptRequested():
+            case InstructionState.Halted when intManager.InterruptPending():
                 state = InstructionState.Fetch;
                 break;
         }
@@ -97,21 +107,23 @@ public partial class CPU
             return;
         }
 
+        byte opcode;
 
         //main progressor for going through the opcode
-        if (intManager.IsHaltBug() == true) 
+        if (haltBug) 
         {
+            opcode = bus.ReadByte(PC);
             haltBug = false;
-            return;
         }
         else
         {
-            byte opcode = bus.ReadByte(PC++);
-            int cycles = ExecuteBaseOpcode(opcode);
-
-            timer.TimerStep(cycles);
-            intManager.OnInstructionFinished();
+            opcode = bus.ReadByte(PC++);
         }
+
+        int cycles = ExecuteBaseOpcode(opcode);
+
+        timer.TimerStep(cycles);
+        intManager.OnInstructionFinished();
 
     }
 
@@ -122,7 +134,7 @@ public partial class CPU
         switch (state)
         {
             case InstructionState.Interrupt_IF:
-                activeInterrupt = intManager.GetPendingInterrupt();
+                activeInterrupt = intManager.getInterruptType();
 
                 if (activeInterrupt == -1)
                 {
@@ -152,7 +164,7 @@ public partial class CPU
                 return 1;
 
             case InstructionState.Interrupt_Jump:
-                PC = intManager.GetInterruptVector(activeInterrupt);
+                PC = (ushort)intManager.GetInterruptVector(activeInterrupt);
                 activeInterrupt = -1;
                 state = InstructionState.Fetch;
                 return 1;

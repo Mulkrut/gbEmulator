@@ -27,19 +27,31 @@ public partial class CPU
 
     public ushort Pop16()
     {
-        byte lo = bus.ReadByte(SP++);
-        byte hi = bus.ReadByte(SP++);
+        byte lo = bus.ReadByte(SP);
+        SP++;
+        byte hi = bus.ReadByte(SP);
+        SP++;
         return (ushort)(lo | (hi << 8));
     }
 
     private void Stop()
     {
-        //todo
+        Fetch8();
+        timer.DIV = 0;
+        state = InstructionState.Stopped;
     }
 
     private void Halt()
     {
-        //todo
+        if (!intManager.IME && intManager.InterruptPending())
+        {
+            haltBug = true;
+            state = InstructionState.Fetch;
+        }
+        else
+        {
+            state = InstructionState.Halted;
+        }
     }
 
     private byte ExecuteCBOpcode(byte valye)

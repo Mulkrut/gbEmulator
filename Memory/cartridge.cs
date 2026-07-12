@@ -15,9 +15,9 @@ public class Cartridge
     public bool HasRam { get; }
     public bool HasBattery { get; }
 
-    public Cartridge(string romName)
+    public Cartridge(string romPath)
     {
-        byte[] rom = File.ReadAllBytes(romName);
+        this.rom = File.ReadAllBytes(romPath);
         
 
         CartridgeType = rom[0x0147];
@@ -34,8 +34,7 @@ public class Cartridge
 
     public void CartrideInfoToConsole()
     {
-        Console.WriteLine(Cartridge.Title);
-        Console.WriteLine(Cartridge.CartridgeType);
+        Console.WriteLine(ReadTitle());
         Console.WriteLine(GetRomSizeBytes(RomSizeCode));
         Console.WriteLine("Has ram: " + HasRam);
         Console.WriteLine(GetRamSizeBytes(RamSizeCode));
@@ -52,8 +51,8 @@ public class Cartridge
         for (int i = 0; i < 16; i++)
         {
             int charAddress = rom[0x134 + i];
-            if (rom[charAddress] == 0x00) break;
-            else CartrideName += (char)(rom[charAddress]);
+            if (charAddress == 0x00) break;
+            else CartrideName += (char)(charAddress);
         }
         
         return CartrideName;
@@ -78,7 +77,7 @@ public class Cartridge
             case 0x03: return 256 * kbit;
             case 0x04: return 512 * kbit;
             case 0x05: return 1 * mbit;
-            case 0x06: return 2 * kbit;
+            case 0x06: return 2 * mbit;
             case 0x07: return 4 * mbit;
             case 0x08: return 8 * mbit;
             default: return -1; //temp, write to terminal and find a fallback

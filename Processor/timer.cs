@@ -4,6 +4,13 @@ public class Timers
     //https://gbdev.io/pandocs/Timer_and_Divider_Registers.html
     //mostly gonna use the gbdev
 
+    private readonly InterruptManager intManager;
+
+    public Timers(InterruptManager intManager)
+    {
+        this.intManager = intManager;
+    }
+
     public byte DIV { get; set; }   // FF04
     public byte TIMA { get; set; }          // FF05
     public byte TMA { get; set; }           // FF06
@@ -73,7 +80,7 @@ public class Timers
         {
             TIMA = TMA;
             //request interrupt
-            InterruptManager.RequestInterruption(2); //2 = timer, maybe not correct? to fix when i change in the int. file
+            intManager.RequestInterruption(2); //2 = timer, maybe not correct? to fix when i change in the int. file
         }
         else TIMA++;
     }
