@@ -1,6 +1,8 @@
 public partial class CPU
 {
 
+    //https://rgbds.gbdev.io/docs/v1.0.1/gbz80.7
+
     //8-bit arithmetic
     private byte Add8(byte a, byte b)
     {
@@ -112,7 +114,7 @@ public partial class CPU
 
         SetZFlag(r == 0);
         SetNFlag(false);
-        SetHFlag((a & 0x0F) == 0x0F);
+        SetHFlag((a & 0x0F) == 0x0F); //0x0F = 00001111
         return r;
     }
 
@@ -134,7 +136,7 @@ public partial class CPU
         ushort r = (ushort)result; //converting from int to ushort
 
         SetNFlag(false);
-        SetHFlag(((a & 0x0FFF) + (b & 0x0FFF)) > 0x0FFF); //0x0F = 00001111
+        SetHFlag(((a & 0x0FFF) + (b & 0x0FFF)) > 0x0FFF); //0x0FFF = 0000111111111111
         SetCFlag(result > 0xFFFF);
 
         return r;
@@ -160,6 +162,7 @@ public partial class CPU
         int oldBit7 = (value >> 7) & 0x01;
         byte r = (byte)((value << 1) | oldBit7);
 
+        SetZFlag(false);
         SetNFlag(false);
         SetHFlag(false);
         SetCFlag(oldBit7 != 0);
@@ -295,6 +298,7 @@ public partial class CPU
         return r;
     }
 
+    //checks for if bit in register is set
     private void TestBit(int bit, byte value)
     {
         SetZFlag((value & (1 << bit)) == 0);
