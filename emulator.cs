@@ -42,10 +42,18 @@ public class Emulator
         {
             romPath = args[0];
         }
-        else //load from roms folder (only have 1 in for now)
+        else //load from roms folder (picks the first one it finds)
         {
             string romFolder = Path.Combine(AppContext.BaseDirectory, "roms");
-            if (File.Exists(romFolder)) romPath = romFolder;
+            if (Directory.Exists(romFolder))
+            {
+                string[] gbFiles = Directory.GetFiles(romFolder, "*.gb");
+
+                if (gbFiles.Length > 0)
+                {
+                    romPath = gbFiles[0]; // Grabs the first .gb file found
+                }
+            }
         }
 
         if (romPath == null) 
