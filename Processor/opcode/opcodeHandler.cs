@@ -69,7 +69,7 @@ public partial class CPU
             case 0x1E: E = Fetch8(); return 8;
             case 0x26: H = Fetch8(); return 8;
             case 0x2E: L = Fetch8(); return 8;
-            case 0x36: bus.WriteByte(HL, Fetch8()); return 12;
+            case 0x36: bus.WriteByte(HL, Fetch8()); return 8;
             case 0x3E: A = Fetch8(); return 8;
 
             // =====================================================================
@@ -256,7 +256,7 @@ public partial class CPU
             case 0xC1: BC = Pop16(); return 12;
             case 0xD1: DE = Pop16(); return 12;
             case 0xE1: HL = Pop16(); return 12;
-            case 0xF1: AF = Pop16(); F &= 0xF0; return 12;
+            case 0xF1: AF = Pop16(); return 12;
 
             case 0xC5: Push16(BC); return 16;
             case 0xD5: Push16(DE); return 16;
@@ -274,20 +274,28 @@ public partial class CPU
             // =====================================================================
             // Flag / misc ops
             // =====================================================================
-            case 0x27: Daa(); return 4;
-            case 0x2F:
+            case 0x27:
+
+            //for bug fixing
+            Console.WriteLine($"Before DAA: A={A:X2} F={F:X2} Z={GetZFlag()} N={GetNFlag()} H={GetHFlag()} C={GetCFlag()}");
+            Daa();
+            Console.WriteLine($"After  DAA: A={A:X2} F={F:X2}");
+            return 4;
+
+
+            case 0x2F: //CPL
                 A = (byte)~A;
                 SetNFlag(true);
                 SetHFlag(true);
                 return 4;
 
-            case 0x37:
+            case 0x37: //SCF
                 SetNFlag(false);
                 SetHFlag(false);
                 SetCFlag(true);
                 return 4;
 
-            case 0x3F:
+            case 0x3F: //CCF
                 SetNFlag(false);
                 SetHFlag(false);
                 SetCFlag(!GetCFlag());
@@ -337,8 +345,9 @@ public partial class CPU
         if (condition)
         {
             PC = address;
+            return 16;
         }
-        return 16;
+        return 12;
     }
 
     private int JumpRelative(bool condition)

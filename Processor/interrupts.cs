@@ -6,6 +6,8 @@ public class InterruptManager
     public bool IME_EnableScheduled = false;
     public bool IME_DisableScheduled = false;
 
+    public bool imeEnablePending;
+
     //just doing as my references, might change to bools
     public int pendingEnable = -1;
     public int pendingDisable = -1;
@@ -34,39 +36,25 @@ public class InterruptManager
     };
 
 
-    public void OnInstructionFinished() {
-        if (pendingEnable != -1) {
-            if (pendingEnable-- == 0) {
-                EnableInterrupts(false);
-            }
-        }
-
-        if (pendingDisable != -1) {
-            if (pendingDisable-- == 0) {
-                DisableInterrupts();
-            }
-        }
-    }
-    
     public void EnableInterrupts(bool withDelay)
     {
-        if (withDelay == true)
-        {
-            if (pendingEnable == -1) pendingEnable = 1;
-        }
-        else
-        {
-            pendingEnable = -1;
-            IME = true;
-        }
-    
+        if (withDelay) imeEnablePending = true;
+        else IME = true;
     }
 
     public void DisableInterrupts()
     {
-        pendingEnable = -1;
-        pendingDisable = -1;
+        imeEnablePending = false;
         IME = false;
+    }
+
+    public void OnInstructionFinished()
+    {
+        if (imeEnablePending)
+        {
+            IME = true;
+            imeEnablePending = false;
+        }
     }
 
     public void RequestInterruption(byte interruption)
@@ -80,9 +68,9 @@ public class InterruptManager
         IF &= (byte)~((0x01 << interruption));
     }
 
-    public byte getInterruptType()
+    public int getInterruptType()
     {
-        byte interruptType = 0x00;
+        int interruptType = -1;
         byte pending = (byte)(IE & IF & 0x1F);
 
         //goes through bit 0 - 4 of IF to find the type

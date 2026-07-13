@@ -34,7 +34,7 @@ public class Cartridge
 
     public void CartrideInfoToConsole()
     {
-        Console.WriteLine(ReadTitle());
+        Console.WriteLine("Title: " + ReadTitle());
         Console.WriteLine(GetRomSizeBytes(RomSizeCode));
         Console.WriteLine("Has ram: " + HasRam);
         Console.WriteLine(GetRamSizeBytes(RamSizeCode));

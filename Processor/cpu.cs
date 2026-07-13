@@ -23,6 +23,8 @@ public partial class CPU
     private int activeInterrupt = -1;
     public bool haltBug;
 
+   
+
     //Init
     public CPU(BUS bus, Timers timer, InterruptManager intManager, GPU gpu)
     {
@@ -48,8 +50,6 @@ public partial class CPU
     {
 
         timer.TimerStep(1);
-        //gpu
-        //dma
 
         // Only want to execute very 4th tick
         executeTimer++;
@@ -95,7 +95,7 @@ public partial class CPU
             case InstructionState.Interrupt_Push2:
             case InstructionState.Interrupt_Jump:
                 int cyclesForHandling = HandleInterrupt(); //long var name cause stupid compiler
-                timer.TimerStep(cyclesForHandling * 4);//mCycles therefor i *4, compared to T cycles
+                timer.TimerStep(cyclesForHandling);//mCycles therefor i may have to *4, compared to T cycles
                 return;
             case InstructionState.Halted when intManager.InterruptPending():
                 state = InstructionState.Fetch;
@@ -107,6 +107,7 @@ public partial class CPU
             return;
         }
 
+        TraceOpcode();
         byte opcode;
 
         //main progressor for going through the opcode
@@ -183,5 +184,32 @@ public partial class CPU
         PC = 0x100;
         SP = 0xFFFE;
     }
+
+
+
+     //used to bugfix
+    private bool traceEnabled = true;
+    private string? lastTraceLine = null;
+    
+    private void TraceOpcode()
+    {
+        if (!traceEnabled) return;
+
+        byte b0 = bus.ReadByte(PC);
+        byte b1 = bus.ReadByte((ushort)(PC + 1));
+        byte b2 = bus.ReadByte((ushort)(PC + 2));
+        byte b3 = bus.ReadByte((ushort)(PC + 3));
+
+        string line =
+            $"A:{A:X2} F:{F:X2} B:{B:X2} C:{C:X2} D:{D:X2} E:{E:X2} H:{H:X2} L:{L:X2} " +
+            $"SP:{SP:X4} PC:{PC:X4} PCMEM:{b0:X2},{b1:X2},{b2:X2},{b3:X2}";
+
+        if (line != lastTraceLine)
+        {
+            Console.WriteLine(line);
+            lastTraceLine = line;
+        }
+    }
+
 
 }

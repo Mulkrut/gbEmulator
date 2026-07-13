@@ -36,9 +36,7 @@ public partial class CPU
 
     private void Stop()
     {
-        Fetch8();
-        timer.DIV = 0;
-        state = InstructionState.Stopped;
+        Console.Write("Stop called, not implemented yet");
     }
 
     private void Halt()
@@ -60,24 +58,23 @@ public partial class CPU
     }
 
     //Decimal adjust after addition, makes it a number from 0 - 9
+    //https://forums.nesdev.org/viewtopic.php?t=15944
     private void Daa()
     {   
-        int adjustment = 0;
         bool carry = GetCFlag();
+        int adjustment = 0;
 
         if (!GetNFlag()) // after addition
         {
             if (GetHFlag() || (A & 0x0F) > 0x09)
             {
-                adjustment |= 0x06;
+                adjustment |= 0x6;
             }
-
             if (carry || A > 0x99)
             {
                 adjustment |= 0x60;
                 carry = true;
             }
-
             A = (byte)(A + adjustment);
         }
         else // after subtraction
@@ -91,7 +88,6 @@ public partial class CPU
             {
                 adjustment |= 0x60;
             }
-
             A = (byte)(A - adjustment);
         }
 
@@ -99,5 +95,4 @@ public partial class CPU
         SetHFlag(false);
         SetCFlag(carry);
     }
-
 }

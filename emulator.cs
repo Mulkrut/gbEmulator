@@ -65,6 +65,7 @@ public class Emulator
         Console.WriteLine($"Loading ROM: {romPath}");
 
         Initialize(romPath);
+        cartridge.CartrideInfoToConsole();
 
         //main loop, maybe add a exit condition later
         while (true)

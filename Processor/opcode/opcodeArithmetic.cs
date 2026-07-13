@@ -51,7 +51,7 @@ public partial class CPU
         SetZFlag(r == 0);
         SetNFlag(true);
         SetHFlag((a & 0x0F) < ((b & 0x0F) + carryIn));
-        SetCFlag(a < b + carryIn);
+        SetCFlag(result < 0);
 
         return r;
     }
@@ -142,11 +142,15 @@ public partial class CPU
 
     private ushort AddSigned8ToSP(ushort sp, byte value)
     {
-        
-        int result = sp + value;
-        ushort r = (ushort)result;
+        sbyte offset = unchecked((sbyte)value);
+        int result = sp + offset;
 
-        return r; //Temp solution
+        SetZFlag(false);
+        SetNFlag(false);
+        SetHFlag(((sp & 0x0F) + (value & 0x0F)) > 0x0F);
+        SetCFlag(((sp & 0xFF) + (value & 0xFF)) > 0xFF);
+
+        return (ushort)result;
     }
 
 
