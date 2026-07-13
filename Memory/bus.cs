@@ -14,7 +14,7 @@ public class BUS
     private byte[] oam  = new byte[0x00A0];   // FE00-FE9F
     private byte[] hram = new byte[0x007F];   // FF80-FFFE
     private byte[] io = new byte[0x80];       // fallback
-    private byte ieRegister;                  // FFFF   
+    //private byte ieRegister;                  // FFFF   unused as id rather use IE from intmanager
 
     //private byte interruptFlags;        // FF0F
     //moved to interrupts IF
@@ -101,7 +101,7 @@ public class BUS
         }
         else
         {
-            return ieRegister;
+            return intManager.IE;
         }
     }
 
@@ -149,7 +149,7 @@ public class BUS
         }
         else
         {
-            ieRegister = value;
+            intManager.IE = value;
         }
     }
 

@@ -55,23 +55,27 @@ public partial class CPU
     {
         if (value) F |= FLAG_Z;
         else F &= unchecked((byte)~FLAG_Z);
+        F &= 0xF0; //normalizes F to have the 0s in ZNHC0000
     }
 
     public void SetNFlag(bool value)
     {
         if (value) F |= FLAG_N;
         else F &= unchecked((byte)~FLAG_N);
+        F &= 0xF0;
     }
 
     public void SetHFlag(bool value)
     {
         if (value) F |= FLAG_H;
         else F &= unchecked((byte)~FLAG_H);
+        F &= 0xF0;
     }
 
     public void SetCFlag(bool value)
     {
         if (value) F |= FLAG_C;
         else F &= unchecked((byte)~FLAG_C);
+        F &= 0xF0;
     }
 }

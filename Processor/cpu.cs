@@ -188,7 +188,7 @@ public partial class CPU
 
 
      //used to bugfix
-    private bool traceEnabled = true;
+    private bool traceEnabled = false;
     private string? lastTraceLine = null;
     
     private void TraceOpcode()

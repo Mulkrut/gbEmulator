@@ -24,9 +24,9 @@ public class Timers
     {
         //return the type of timer it is
         if      (address == 0xFF04) return DIV;
-        else if (address == 0xFF04) return TIMA;
-        else if (address == 0xFF05) return TMA;
-        else if (address == 0xFF06) return TAC;
+        else if (address == 0xFF05) return TIMA;
+        else if (address == 0xFF06) return TMA;
+        else if (address == 0xFF07) return TAC;
         else return 0xFF;
     }
 

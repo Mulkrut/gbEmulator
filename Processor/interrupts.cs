@@ -7,6 +7,7 @@ public class InterruptManager
     public bool IME_DisableScheduled = false;
 
     public bool imeEnablePending;
+    private int imeEnableDelay = 0;
 
     //just doing as my references, might change to bools
     public int pendingEnable = -1;
@@ -38,22 +39,23 @@ public class InterruptManager
 
     public void EnableInterrupts(bool withDelay)
     {
-        if (withDelay) imeEnablePending = true;
+        if (withDelay) imeEnableDelay = 2;
         else IME = true;
     }
 
     public void DisableInterrupts()
     {
-        imeEnablePending = false;
+        imeEnableDelay = 0;
         IME = false;
     }
 
     public void OnInstructionFinished()
     {
-        if (imeEnablePending)
+        if (imeEnableDelay > 0)
         {
-            IME = true;
-            imeEnablePending = false;
+            imeEnableDelay--;
+            if (imeEnableDelay == 0)
+                IME = true;
         }
     }
 
@@ -76,7 +78,7 @@ public class InterruptManager
         //goes through bit 0 - 4 of IF to find the type
         for (byte i = 0; i < 5; i++)
         {
-            if ((pending & (1 << i)) == 0x01)
+            if ((pending & (1 << i)) != 0)
             {
                 interruptType = i;
                 break;

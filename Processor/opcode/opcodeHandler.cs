@@ -55,7 +55,7 @@ public partial class CPU
             // =====================================================================
             case 0x00: return 4; // NOP
             case 0x10: Stop(); return 4; // STOP
-            case 0xCB: return ExecuteCBOpcode(Fetch8());
+            case 0xCB: return ExecuteCBOpcode(opcode);
             case 0xF3: intManager.DisableInterrupts(); return 4; // DI
             case 0xFB: intManager.EnableInterrupts(true); return 4; // EI
             case 0x76: Halt(); return 4; // HALT safety
@@ -69,7 +69,7 @@ public partial class CPU
             case 0x1E: E = Fetch8(); return 8;
             case 0x26: H = Fetch8(); return 8;
             case 0x2E: L = Fetch8(); return 8;
-            case 0x36: bus.WriteByte(HL, Fetch8()); return 8;
+            case 0x36: bus.WriteByte(HL, Fetch8()); return 12;
             case 0x3E: A = Fetch8(); return 8;
 
             // =====================================================================
@@ -256,12 +256,12 @@ public partial class CPU
             case 0xC1: BC = Pop16(); return 12;
             case 0xD1: DE = Pop16(); return 12;
             case 0xE1: HL = Pop16(); return 12;
-            case 0xF1: AF = Pop16(); return 12;
+            case 0xF1: AF = PopAF(); return 12;
 
             case 0xC5: Push16(BC); return 16;
             case 0xD5: Push16(DE); return 16;
             case 0xE5: Push16(HL); return 16;
-            case 0xF5: Push16(AF); return 16;
+            case 0xF5: PushAF(); return 16;
 
             // =====================================================================
             // Rotates on A
@@ -277,9 +277,9 @@ public partial class CPU
             case 0x27:
 
             //for bug fixing
-            Console.WriteLine($"Before DAA: A={A:X2} F={F:X2} Z={GetZFlag()} N={GetNFlag()} H={GetHFlag()} C={GetCFlag()}");
+            //Console.WriteLine($"Before DAA: A={A:X2} F={F:X2} Z={GetZFlag()} N={GetNFlag()} H={GetHFlag()} C={GetCFlag()}");
             Daa();
-            Console.WriteLine($"After  DAA: A={A:X2} F={F:X2}");
+            //Console.WriteLine($"After  DAA: A={A:X2} F={F:X2}");
             return 4;
 
 

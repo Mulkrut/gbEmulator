@@ -203,4 +203,102 @@ public partial class CPU
 
         return r;
     }
+
+
+    //just like the A versions but they set the Z flag (only using in the ExecuteCBOpcode)
+    private byte Rlc(byte value)
+    {
+        int oldBit7 = (value >> 7) & 1;
+        byte r = (byte)((value << 1) | oldBit7);
+        SetZFlag(r == 0);
+        SetNFlag(false);
+        SetHFlag(false);
+        SetCFlag(oldBit7 != 0);
+        return r;
+    }
+
+    private byte Rrc(byte value)
+    {
+        int oldBit0 = value & 1;
+        byte r = (byte)((value >> 1) | (oldBit0 << 7));
+        SetZFlag(r == 0);
+        SetNFlag(false);
+        SetHFlag(false);
+        SetCFlag(oldBit0 != 0);
+        return r;
+    }
+
+    private byte Rl(byte value)
+    {
+        int carryIn = GetCFlag() ? 1 : 0;
+        int oldBit7 = (value >> 7) & 1;
+        byte r = (byte)((value << 1) | carryIn);
+        SetZFlag(r == 0);
+        SetNFlag(false);
+        SetHFlag(false);
+        SetCFlag(oldBit7 != 0);
+        return r;
+    }
+
+    private byte Rr(byte value)
+    {
+        int carryIn = GetCFlag() ? 1 : 0;
+        int oldBit0 = value & 1;
+        byte r = (byte)((value >> 1) | (carryIn << 7));
+        SetZFlag(r == 0);
+        SetNFlag(false);
+        SetHFlag(false);
+        SetCFlag(oldBit0 != 0);
+        return r;
+    }
+
+    private byte Sla(byte value)
+    {
+        int oldBit7 = (value >> 7) & 1;
+        byte r = (byte)(value << 1);
+        SetZFlag(r == 0);
+        SetNFlag(false);
+        SetHFlag(false);
+        SetCFlag(oldBit7 != 0);
+        return r;
+    }
+
+    private byte Sra(byte value)
+    {
+        int oldBit0 = value & 1;
+        byte r = (byte)((value >> 1) | (value & 0x80));
+        SetZFlag(r == 0);
+        SetNFlag(false);
+        SetHFlag(false);
+        SetCFlag(oldBit0 != 0);
+        return r;
+    }
+
+    private byte Srl(byte value)
+    {
+        int oldBit0 = value & 1;
+        byte r = (byte)(value >> 1);
+        SetZFlag(r == 0);
+        SetNFlag(false);
+        SetHFlag(false);
+        SetCFlag(oldBit0 != 0);
+        return r;
+    }
+
+    private byte Swap(byte value)
+    {
+        byte r = (byte)((value << 4) | (value >> 4));
+        SetZFlag(r == 0);
+        SetNFlag(false);
+        SetHFlag(false);
+        SetCFlag(false);
+        return r;
+    }
+
+    private void TestBit(int bit, byte value)
+    {
+        SetZFlag((value & (1 << bit)) == 0);
+        SetNFlag(false);
+        SetHFlag(true);
+    }
 }
