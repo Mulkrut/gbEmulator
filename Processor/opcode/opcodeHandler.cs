@@ -82,12 +82,12 @@ public partial class CPU
             // =====================================================================
             // 8-bit INC
             // =====================================================================
-            case 0x04: B = INC(B); return 4; //AHHHHHHH
-            case 0x0C: C = INC(C); return 4;
-            case 0x14: D = INC(D); return 4;
-            case 0x1C: E = INC(E); return 4;
-            case 0x24: H = INC(H); return 4;
-            case 0x2C: L = INC(L); return 4;
+            case 0x04: B = Inc8(B); return 4; //AHHHHHHH
+            case 0x0C: C = Inc8(C); return 4;
+            case 0x14: D = Inc8(D); return 4;
+            case 0x1C: E = Inc8(E); return 4;
+            case 0x24: H = Inc8(H); return 4;
+            case 0x2C: L = Inc8(L); return 4;
             case 0x34:
             {
                 byte value = bus.ReadByte(HL);
@@ -167,7 +167,7 @@ public partial class CPU
             case 0x08:
             {
                 ushort addr = Fetch16();
-                bus.WriteByte(addr, (byte)(SP & 0x00FF));
+                bus.WriteByte(addr, (byte)(SP & 0xFF));
                 bus.WriteByte((ushort)(addr + 1), (byte)(SP >> 8));
                 return 20;
             }
@@ -278,7 +278,7 @@ public partial class CPU
             //for bug fixing
             //Console.WriteLine($"Before DAA: A={A:X2} F={F:X2} Z={GetZFlag()} N={GetNFlag()} H={GetHFlag()} C={GetCFlag()}");
             Daa();
-            //Console.WriteLine($"After  DAA: A={A:X2} F={F:X2}");
+            //Console.WriteLine($"After DAA: A={A:X2} F={F:X2} Z={GetZFlag()} N={GetNFlag()} H={GetHFlag()} C={GetCFlag()}");
             return 4;
 
 
@@ -309,6 +309,8 @@ public partial class CPU
 
     //executes cb opcode functions
     //https://izik1.github.io/gbops/index.html
+    //https://rgbds.gbdev.io/docs/v1.0.1/gbz80.7
+
     private int ExecuteCBOpcode(byte opcode)
     {
 
@@ -321,7 +323,7 @@ public partial class CPU
             case 0x03: E = Rlc(E); return 8;
             case 0x04: H = Rlc(H); return 8;
             case 0x05: L = Rlc(L); return 8;
-            case 0x06: return 8; //(todo: HL)
+            case 0x06: bus.WriteByte(HL, Rlc(bus.ReadByte(HL))); return 16;
             case 0x07: A = Rlc(A); return 8;
 
             //RL
@@ -331,112 +333,146 @@ public partial class CPU
             case 0x13: E = Rl(E); return 8;
             case 0x14: H = Rl(H); return 8;
             case 0x15: L = Rl(L); return 8;
-            case 0x16: return 8; //(todo: HL)
+            case 0x16: bus.WriteByte(HL, Rl(bus.ReadByte(HL))); return 16;
             case 0x17: A = Rl(A); return 8;
 
             //RRC
+            case 0x08: B = Rrc(B); return 8;
+            case 0x09: C = Rrc(C); return 8;
+            case 0x0A: D = Rrc(D); return 8;
+            case 0x0B: E = Rrc(E); return 8;
+            case 0x0C: H = Rrc(H); return 8;
+            case 0x0D: L = Rrc(L); return 8;
+            case 0x0E: bus.WriteByte(HL, Rrc(bus.ReadByte(HL))); return 16;
+            case 0x0F: A = Rrc(A); return 8;
 
             //RR
+            case 0x18: B = Rr(B); return 8;
+            case 0x19: C = Rr(C); return 8;
+            case 0x1A: D = Rr(D); return 8;
+            case 0x1B: E = Rr(E); return 8;
+            case 0x1C: H = Rr(H); return 8;
+            case 0x1D: L = Rr(L); return 8;
+            case 0x1E: bus.WriteByte(HL, Rr(bus.ReadByte(HL))); return 16;
+            case 0x1F: A = Rr(A); return 8;
 
             //SLA
+            case 0x20: B = Sla(B); return 8;
+            case 0x21: C = Sla(C); return 8;
+            case 0x22: D = Sla(D); return 8;
+            case 0x23: E = Sla(E); return 8;
+            case 0x24: H = Sla(H); return 8;
+            case 0x25: L = Sla(L); return 8;
+            case 0x26: bus.WriteByte(HL, Sla(bus.ReadByte(HL))); return 16;
+            case 0x27: A = Sla(A); return 8;
 
             //SRA
+            case 0x28: B = Sra(B); return 8;
+            case 0x29: C = Sra(C); return 8;
+            case 0x2A: D = Sra(D); return 8;
+            case 0x2B: E = Sra(E); return 8;
+            case 0x2C: H = Sra(H); return 8;
+            case 0x2D: L = Sra(L); return 8;
+            case 0x2E: bus.WriteByte(HL, Sra(bus.ReadByte(HL))); return 16;
+            case 0x2F: A = Sra(A); return 8;
 
             //SRL
+            case 0x38: B = Srl(B); return 8;
+            case 0x39: C = Srl(C); return 8;
+            case 0x3A: D = Srl(D); return 8;
+            case 0x3B: E = Srl(E); return 8;
+            case 0x3C: H = Srl(H); return 8;
+            case 0x3D: L = Srl(L); return 8;
+            case 0x3E: bus.WriteByte(HL, Srl(bus.ReadByte(HL))); return 16;
+            case 0x3F: A = Srl(A); return 8;
+
             //SWAP
-            //BIT 0 - 7
-            //RES 0 - 7
-            //SET 0 - 7
+            case 0x30: B = Swap(B); return 8;
+            case 0x31: C = Swap(C); return 8;
+            case 0x32: D = Swap(D); return 8;
+            case 0x33: E = Swap(E); return 8;
+            case 0x34: H = Swap(H); return 8;
+            case 0x35: L = Swap(L); return 8;
+            case 0x36: bus.WriteByte(HL, Swap(bus.ReadByte(HL))); return 16;
+            case 0x37: A = Swap(A); return 8;
 
-
-
+            default: break;
         }
-    }
+
+
+        //BIT 0 - 7
+        //goes from 40 - 7F
 
 
 
+        //target based on first 3 bits, 000 = B, 001 = C, 010 = D etc.
+        int target = (opcode & 0b111);
 
+        //same with the value but for the middle part.
+        byte bitValue = (byte)((opcode >> 3) & 0x07);
 
-
-        /* OLD SHIT YUCK
-        int target = opcode & 0b111;
-        int y = (opcode >> 3) & 0b111;
-        int group = (opcode >> 6) & 0b11;
-
-        byte value = ReadR8(target);
-        bool isHL = (target == 6);
-
-        switch (group)
+        //BIT
+        if (0x40 <= opcode && opcode <= 0x7F)
         {
-            case 0:
-                value = y switch
-                {
-                    0 => Rlc(value),
-                    1 => Rrc(value),
-                    2 => Rl(value),
-                    3 => Rr(value),
-                    4 => Sla(value),
-                    5 => Sra(value),
-                    6 => Swap(value),
-                    7 => Srl(value),
-                    _ => throw new InvalidOperationException($"Invalid CB opcode 0x{opcode:X2}")
-                };
-                WriteR8(target, value);
-                return isHL ? 16 : 8;
-
-            case 1:
-                TestBit(y, value);
-                return isHL ? 12 : 8;
-
-            case 2:
-                value = (byte)(value & ~(1 << y));
-                WriteR8(target, value);
-                return isHL ? 16 : 8;
-
-            case 3:
-                value = (byte)(value | (1 << y));
-                WriteR8(target, value);
-                return isHL ? 16 : 8;
-
-            default:
-            throw new InvalidOperationException($"Invalid CB opcode 0x{opcode:X2}");
-            
+            switch (target)
+                {  
+                    case 0: TestBit(B, bitValue); return 8;
+                    case 1: TestBit(C, bitValue); return 8;
+                    case 2: TestBit(D, bitValue); return 8;
+                    case 3: TestBit(E, bitValue); return 8;
+                    case 4: TestBit(H, bitValue); return 8;
+                    case 5: TestBit(L, bitValue); return 8;
+                    case 6: TestBit(bus.ReadByte(HL), bitValue); return 12; //HL
+                    case 7: TestBit(A, bitValue); return 8;
+                }
         }
+
+        //RES 0 - 7
+        else if (0x80 <= opcode && opcode <= 0xBF)
+        {
+            switch (target)
+                {  
+                    case 0: B = BitRes(B, bitValue); return 8;
+                    case 1: C = BitRes(C, bitValue); return 8;
+                    case 2: D = BitRes(D, bitValue); return 8;
+                    case 3: E = BitRes(E, bitValue); return 8;
+                    case 4: H = BitRes(H, bitValue); return 8;
+                    case 5: L = BitRes(L, bitValue); return 8;
+                    case 6: //god hl is cringe
+                    {
+                        byte hlValue = bus.ReadByte(HL);
+                        byte resResult = BitRes(hlValue, bitValue); //HL
+                        bus.WriteByte(HL, resResult);
+                        return 16;
+                    }
+                    case 7: A = BitRes(A, bitValue); return 8;
+                }
+        }
+
+        //SET 0 - 7
+        else if (0xC0 <= opcode && opcode <= 0xFF)
+        {
+            switch (target)
+                {  
+                    case 0: B = BitSet(B, bitValue); return 8;
+                    case 1: C = BitSet(C, bitValue); return 8;
+                    case 2: D = BitSet(D, bitValue); return 8;
+                    case 3: E = BitSet(E, bitValue); return 8;
+                    case 4: H = BitSet(H, bitValue); return 8;
+                    case 5: L = BitSet(L, bitValue); return 8;
+                    case 6: //still cringe
+                    {
+                        byte hlValue = bus.ReadByte(HL);
+                        byte setResult = BitSet(hlValue, bitValue); //HL
+                        bus.WriteByte(HL, setResult);
+                        return 16;
+                    }
+                    case 7: A = BitSet(A, bitValue); return 8;
+                }
+        }
+        Console.WriteLine("BIG ERROR WHOO in cbt codex");
+        return 0; //BIG ERROR WHOO
     }
-    */
-
-    // private byte ReadR8(int index)
-    // {
-    //     return index switch
-    //     {
-    //         0 => B,
-    //         1 => C,
-    //         2 => D,
-    //         3 => E,
-    //         4 => H,
-    //         5 => L,
-    //         6 => bus.ReadByte(HL),
-    //         7 => A,
-    //         _ => throw new InvalidOperationException($"Invalid r8 index: {index}")
-    //     };
-    // }
-
-    // private void WriteR8(int index, byte value)
-    // {
-    //     switch (index)
-    //     {
-    //         case 0: B = value; break;
-    //         case 1: C = value; break;
-    //         case 2: D = value; break;
-    //         case 3: E = value; break;
-    //         case 4: H = value; break;
-    //         case 5: L = value; break;
-    //         case 6: bus.WriteByte(HL, value); break;
-    //         case 7: A = value; break;
-    //         default: throw new InvalidOperationException($"Invalid r8 index: {index}");
-    //     }
-    // }
-
 
     private int JumpConditional(bool condition)
     {
@@ -481,4 +517,38 @@ public partial class CPU
         }
         return 8;
     }
+
+    //i dont really like these
+    private byte ReadR8(int index)
+    {
+        return index switch
+        {
+            0 => B,
+            1 => C,
+            2 => D,
+            3 => E,
+            4 => H,
+            5 => L,
+            6 => bus.ReadByte(HL),
+            7 => A,
+            _ => throw new InvalidOperationException($"Invalid r8 index: {index}")
+        };
+    }
+
+    private void WriteR8(int index, byte value)
+    {
+        switch (index)
+        {
+            case 0: B = value; break;
+            case 1: C = value; break;
+            case 2: D = value; break;
+            case 3: E = value; break;
+            case 4: H = value; break;
+            case 5: L = value; break;
+            case 6: bus.WriteByte(HL, value); break;
+            case 7: A = value; break;
+            default: throw new InvalidOperationException($"Invalid r8 index: {index}");
+        }
+    }
+
 }

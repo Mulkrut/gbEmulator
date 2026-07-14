@@ -80,6 +80,7 @@ public class Emulator
     {
         //timer.TimerStep(); //idk what to do about this one
         cpu.CpuStep();
+        timer.TimerStep(4);
         
         //todo:
         // dma.tick();

@@ -52,7 +52,7 @@ public partial class CPU
 
         SetZFlag(r == 0);
         SetNFlag(true);
-        SetHFlag((a & 0x0F) < ((b & 0x0F) + carryIn));
+        SetHFlag(((a & 0x0F) - (b & 0x0F) - carryIn) < 0);
         SetCFlag(result < 0);
 
         return r;
@@ -144,13 +144,12 @@ public partial class CPU
 
     private ushort AddSigned8ToSP(ushort sp, byte value)
     {
-        sbyte offset = unchecked((sbyte)value);
-        int result = sp + offset;
+        int result = sp + (sbyte)value;
 
         SetZFlag(false);
         SetNFlag(false);
-        SetHFlag(((sp & 0x0F) + (value & 0x0F)) > 0x0F);
-        SetCFlag(((sp & 0xFF) + (value & 0xFF)) > 0xFF);
+        SetHFlag(((sp ^ value ^ result) & 0x10) != 0);
+        SetCFlag(((sp ^ value ^ result) & 0x100) != 0);
 
         return (ushort)result;
     }
@@ -175,6 +174,7 @@ public partial class CPU
         int oldBit7 = (value >> 7) & 0x01;
         byte r = (byte)((value << 1) | carryIn);
 
+        SetZFlag(false);
         SetNFlag(false);
         SetHFlag(false);
         SetCFlag(oldBit7 != 0);
@@ -188,6 +188,7 @@ public partial class CPU
         int oldBit0 = value & 0x01;
         byte r = (byte)((value >> 1) | oldBit0 << 7);
 
+        SetZFlag(false);
         SetNFlag(false);
         SetHFlag(false);
         SetCFlag(oldBit0 != 0);
@@ -200,6 +201,7 @@ public partial class CPU
         int oldBit0 = value & 0x01;
         byte r = (byte)((value >> 1) | carryIn << 7);
 
+        SetZFlag(false);
         SetNFlag(false);
         SetHFlag(false);
         SetCFlag(oldBit0 != 0);
@@ -236,6 +238,7 @@ public partial class CPU
         int carryIn = GetCFlag() ? 1 : 0;
         int oldBit7 = (value >> 7) & 1;
         byte r = (byte)((value << 1) | carryIn);
+        
         SetZFlag(r == 0);
         SetNFlag(false);
         SetHFlag(false);
@@ -299,9 +302,9 @@ public partial class CPU
     }
 
     //checks for if bit in register is set
-    private void TestBit(int bit, byte value)
+    private void TestBit(byte bit, byte value)
     {
-        SetZFlag((value & (1 << bit)) == 0);
+        SetZFlag((value & bit) == 0);
         SetNFlag(false);
         SetHFlag(true);
     }

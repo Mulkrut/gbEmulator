@@ -59,6 +59,11 @@ public class BUS
 
     public byte ReadByte(ushort address)
     {
+
+        //used for the gameboy doctor
+        if (address == 0xFF44)
+            return 0x90;
+        
         if (address <= 0x3FFF)
         {
             return cartridge.rom[address];

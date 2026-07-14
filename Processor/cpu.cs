@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 
 public partial class CPU
 {
@@ -49,23 +50,21 @@ public partial class CPU
     public void CpuStep()
     {
 
-        timer.TimerStep(1);
-
         // Only want to execute very 4th tick
         executeTimer++;
+
         if (executeTimer < 4) return;
-        else 
-        {
-            executeTimer = 0;
-            executeNext();
-        }
+
+        executeTimer = 0;
+        executeNext();
+
 
     }
 
     //Main loop
     public void executeNext()
     {
-
+        int cycles = 0;
 
         //Interrupt logic here
         if (state == InstructionState.Fetch)
@@ -94,9 +93,12 @@ public partial class CPU
             case InstructionState.Interrupt_Push1:
             case InstructionState.Interrupt_Push2:
             case InstructionState.Interrupt_Jump:
-                int cyclesForHandling = HandleInterrupt(); //long var name cause stupid compiler
-                timer.TimerStep(cyclesForHandling);//mCycles therefor i may have to *4, compared to T cycles
+                cycles = HandleInterrupt();
                 return;
+
+                // int cyclesForHandling = HandleInterrupt(); //long var name cause stupid compiler
+                // timer.TimerStep(cyclesForHandling);//mCycles therefor i may have to *4, compared to T cycles
+                // return;
             case InstructionState.Halted when intManager.InterruptPending():
                 state = InstructionState.Fetch;
                 break;
@@ -107,7 +109,9 @@ public partial class CPU
             return;
         }
 
-        TraceOpcode();
+        //TraceOpcode();
+        LogState();
+
         byte opcode;
 
         //main progressor for going through the opcode
@@ -121,9 +125,9 @@ public partial class CPU
             opcode = bus.ReadByte(PC++);
         }
 
-        int cycles = ExecuteBaseOpcode(opcode);
+        cycles = ExecuteBaseOpcode(opcode);
 
-        timer.TimerStep(cycles);
+        //timer.TimerStep(cycles); - pushed to emulator main loop
         intManager.OnInstructionFinished();
 
     }
@@ -175,19 +179,65 @@ public partial class CPU
     }
 
     //move to registers file?
+    //https://github.com/robert/gameboy-doctor
     public void CPUResetRegisters()
     {
+        A = 0x01;
+        F = 0xB0;
+        B = 0x00;
+        C = 0x13;
+        D = 0x00;
+        E = 0xD8;
+        H = 0x01;
+        L = 0x4F;
+        
+
         AF = 0x01B0;
         BC = 0x0013;
         DE = 0x00D8;
         HL = 0x014d;
+
         PC = 0x100;
         SP = 0xFFFE;
     }
 
 
 
-     //used to bugfix
+
+
+    //creates logfiles for gameboy doctor
+    private StreamWriter? traceWriter;
+
+    public void StartTrace(string path = "cpu_trace.log")
+    {
+        traceWriter = new StreamWriter(path, false);
+        traceWriter.AutoFlush = true;
+    }
+
+    public void StopTrace()
+    {
+        traceWriter?.Flush();
+        traceWriter?.Close();
+        traceWriter = null;
+    }
+
+    private void LogState()
+    {
+        if (traceWriter == null) return;
+
+        byte pc0 = bus.ReadByte(PC);
+        byte pc1 = bus.ReadByte((ushort)(PC + 1));
+        byte pc2 = bus.ReadByte((ushort)(PC + 2));
+        byte pc3 = bus.ReadByte((ushort)(PC + 3));
+
+        traceWriter.WriteLine(
+            $"A:{A:X2} F:{F:X2} B:{B:X2} C:{C:X2} D:{D:X2} E:{E:X2} H:{H:X2} L:{L:X2} " +
+            $"SP:{SP:X4} PC:{PC:X4} PCMEM:{pc0:X2},{pc1:X2},{pc2:X2},{pc3:X2}"
+        );
+    }
+
+
+     //used to bugfix V1
     private bool traceEnabled = false;
     private string? lastTraceLine = null;
     
@@ -201,8 +251,17 @@ public partial class CPU
         byte b3 = bus.ReadByte((ushort)(PC + 3));
 
         string line =
+            $"PC:{PC:X4} OP:{b0:X2} " +
+            $"A:{A:X2} F:{F:X2} " +
+            $"BC:{B:X2}{C:X2} DE:{D:X2}{E:X2} HL:{H:X2}{L:X2} " +
+            $"SP:{SP:X4} " +
+            $"MEM:{b0:X2} {b1:X2} {b2:X2} {b3:X2}";
+
+        /* old
+        string line =
             $"A:{A:X2} F:{F:X2} B:{B:X2} C:{C:X2} D:{D:X2} E:{E:X2} H:{H:X2} L:{L:X2} " +
             $"SP:{SP:X4} PC:{PC:X4} PCMEM:{b0:X2},{b1:X2},{b2:X2},{b3:X2}";
+        */
 
         if (line != lastTraceLine)
         {

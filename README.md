@@ -35,3 +35,5 @@ https://imrannazar.com/series/gameboy-emulation-in-javascript/input
 https://gekkio.fi/files/gb-docs/gbctr.pdf
 https://github.com/rvaccarim/FrozenBoy - Frozenboy C# Emulator
 https://github.com/davidwhitney/CoreBoy - Coreboy C# Emulator
+https://rgbds.gbdev.io/docs/v1.0.1/gbz80.7
+
