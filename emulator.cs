@@ -70,7 +70,9 @@ public class Emulator
         //main loop, maybe add a exit condition later
         while (true)
         {
+            timer.Tick();
             Step();
+            dma.Tick();
         }
 
 

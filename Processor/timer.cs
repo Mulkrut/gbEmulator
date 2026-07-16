@@ -9,16 +9,38 @@ public class Timers
     public Timers(InterruptManager intManager)
     {
         this.intManager = intManager;
+        //speedmode when gbc
     }
+
+    private static readonly int[] FreqToBit = [9, 3, 5, 7];
+
 
     public byte DIV { get; set; }   // FF04
     public byte TIMA { get; set; }          // FF05
-    public byte TMA { get; set; }           // FF06
+    public byte TMA          // FF06
+    {
+        get => TIMA;
+        set
+        {
+            if (ticksSinceOverflow < 5)
+            {
+                TIMA = value;
+                overflow = false;
+                ticksSinceOverflow = 0;
+            }
+        }
+    }
+
     public byte TAC { get; set; }           // FF07
-    
+
+    private bool overflow;
+    private int ticksSinceOverflow;
+
     private int divCounter; //divider register
     private int timaCounter;
     //Note: The divider is affected by CGB double speed mode, and will increment at 32768Hz in double speed.
+
+    private bool previousBit;
 
     public byte Read(ushort address)
     {
@@ -51,6 +73,47 @@ public class Timers
         }
     }
 
+    public void Tick()
+    {
+        UpdateDiv((divCounter + 1) & 0xFFFF);
+        if (overflow == false) return;
+
+        ticksSinceOverflow++;
+        if (ticksSinceOverflow == 4)
+        {
+            intManager.RequestInterruption(2); //2 = timer
+        }
+
+        if (ticksSinceOverflow == 5)
+        {
+            TIMA = TMA;
+        }
+        if (ticksSinceOverflow == 6)
+        {
+            TIMA = TMA;
+            overflow = false;
+            ticksSinceOverflow = 0;
+        }
+    }
+
+
+    private void UpdateDiv(int newDivCount)
+    {
+        divCounter = newDivCount;
+       
+        int bitPos = FreqToBit[TAC & 0b11];
+        //CBG addition bitPos <<= speedmode.
+
+        bool bit = (DIV & (1 << bitPos)) != 0;
+        bit &= (TAC & (1 << 2)) != 0;
+
+        if (!bit && previousBit)
+        {
+            IncrementTima();
+        }
+        previousBit = bit;
+    }
+
     public void TimerStep(int cycles)
     {
         divCounter+= cycles;
@@ -75,14 +138,16 @@ public class Timers
     public void IncrementTima()
     {
 
-        //logic for overflow
-        if (TIMA >= 0xFF)
+        TIMA++;
+        int timaChanged = TIMA % 256;
+        if (timaChanged == 0)
         {
-            TIMA = TMA;
-            //request interrupt
-            intManager.RequestInterruption(2); //2 = timer, maybe not correct? to fix when i change in the int. file
+            TIMA = 0;
+            overflow = true;
+            ticksSinceOverflow = 0;
         }
-        else TIMA++;
+
+
     }
 
     //https://gbdev.io/pandocs/Timer_and_Divider_Registers.html#ff07--tac-timer-control
