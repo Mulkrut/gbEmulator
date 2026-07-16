@@ -1,4 +1,7 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
 using System.IO;
 
 public partial class CPU
@@ -45,6 +48,8 @@ public partial class CPU
         this.intManager.IME = false;
         state = InstructionState.Fetch;
 
+        StartTrace();
+
     }
 
     public void CpuStep()
@@ -80,6 +85,10 @@ public partial class CPU
             {
                 state = intManager.IME ? InstructionState.Interrupt_IF : InstructionState.Fetch;
             }
+            else
+            {
+              return;
+            }
         }
         else if (state == InstructionState.Stopped)
         {
@@ -93,15 +102,8 @@ public partial class CPU
             case InstructionState.Interrupt_Push1:
             case InstructionState.Interrupt_Push2:
             case InstructionState.Interrupt_Jump:
-                cycles = HandleInterrupt();
+                cycles = HandleInterrupt() * 4;
                 return;
-
-                // int cyclesForHandling = HandleInterrupt(); //long var name cause stupid compiler
-                // timer.TimerStep(cyclesForHandling);//mCycles therefor i may have to *4, compared to T cycles
-                // return;
-            case InstructionState.Halted when intManager.InterruptPending():
-                state = InstructionState.Fetch;
-                break;
         }
 
         if (state == InstructionState.Halted || state == InstructionState.Stopped)
@@ -109,7 +111,7 @@ public partial class CPU
             return;
         }
 
-        //TraceOpcode();
+        //creates the trace log for gameboy doctor
         LogState();
 
         byte opcode;
@@ -139,42 +141,42 @@ public partial class CPU
         switch (state)
         {
             case InstructionState.Interrupt_IF:
-                activeInterrupt = intManager.getInterruptType();
+                activeInterrupt = intManager.GetInterruptType();
 
                 if (activeInterrupt == -1)
                 {
                     state = InstructionState.Fetch;
                     return 0;
                 }
+
+                intManager.IME = false;
                 state = InstructionState.Interrupt_IE;
-                return 1;
+                return 1; // first wait cycle
 
             case InstructionState.Interrupt_IE:
-                intManager.IME = false;
                 state = InstructionState.Interrupt_Push1;
-                return 1;
+                return 1; // second wait cycle
 
             case InstructionState.Interrupt_Push1:
                 SP--;
-                bus.WriteByte(SP, (byte)(PC >> 8));
+                bus.WriteByte(SP, (byte)(PC >> 8));   // high byte first
                 state = InstructionState.Interrupt_Push2;
                 return 1;
 
             case InstructionState.Interrupt_Push2:
                 SP--;
-                bus.WriteByte(SP, (byte)(PC & 0x00FF));
-
-                intManager.ClearInterruption((byte)activeInterrupt);
+                bus.WriteByte(SP, (byte)(PC & 0xFF)); // low byte second
+                intManager.ClearInterruption(activeInterrupt);
                 state = InstructionState.Interrupt_Jump;
                 return 1;
 
             case InstructionState.Interrupt_Jump:
-                PC = (ushort)intManager.GetInterruptVector(activeInterrupt);
+                PC = intManager.GetInterruptVector(activeInterrupt);
                 activeInterrupt = -1;
                 state = InstructionState.Fetch;
                 return 1;
-
         }
+
         return 0;
     }
 
@@ -202,17 +204,17 @@ public partial class CPU
     }
 
 
-
-
-
     //creates logfiles for gameboy doctor
     private StreamWriter? traceWriter;
 
-    public void StartTrace(string path = "cpu_trace.log")
-    {
-        traceWriter = new StreamWriter(path, false);
+    public void StartTrace(string fileName = "cpu_trace.log")
+      {
+        // Combines the folder path of the executable with your filename
+        string fullPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, fileName);
+
+        traceWriter = new StreamWriter(fullPath, false);
         traceWriter.AutoFlush = true;
-    }
+      }
 
     public void StopTrace()
     {
@@ -235,40 +237,4 @@ public partial class CPU
             $"SP:{SP:X4} PC:{PC:X4} PCMEM:{pc0:X2},{pc1:X2},{pc2:X2},{pc3:X2}"
         );
     }
-
-
-     //used to bugfix V1
-    private bool traceEnabled = false;
-    private string? lastTraceLine = null;
-    
-    private void TraceOpcode()
-    {
-        if (!traceEnabled) return;
-
-        byte b0 = bus.ReadByte(PC);
-        byte b1 = bus.ReadByte((ushort)(PC + 1));
-        byte b2 = bus.ReadByte((ushort)(PC + 2));
-        byte b3 = bus.ReadByte((ushort)(PC + 3));
-
-        string line =
-            $"PC:{PC:X4} OP:{b0:X2} " +
-            $"A:{A:X2} F:{F:X2} " +
-            $"BC:{B:X2}{C:X2} DE:{D:X2}{E:X2} HL:{H:X2}{L:X2} " +
-            $"SP:{SP:X4} " +
-            $"MEM:{b0:X2} {b1:X2} {b2:X2} {b3:X2}";
-
-        /* old
-        string line =
-            $"A:{A:X2} F:{F:X2} B:{B:X2} C:{C:X2} D:{D:X2} E:{E:X2} H:{H:X2} L:{L:X2} " +
-            $"SP:{SP:X4} PC:{PC:X4} PCMEM:{b0:X2},{b1:X2},{b2:X2},{b3:X2}";
-        */
-
-        if (line != lastTraceLine)
-        {
-            Console.WriteLine(line);
-            lastTraceLine = line;
-        }
-    }
-
-
 }

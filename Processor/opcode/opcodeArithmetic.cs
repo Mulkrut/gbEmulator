@@ -287,7 +287,7 @@ public partial class CPU
         SetZFlag(r == 0);
         SetNFlag(false);
         SetHFlag(false);
-        SetCFlag(oldBit0 != 0);
+        SetCFlag((value & 0b0000001) != 0); //yuck but fixes it maybe
         return r;
     }
 

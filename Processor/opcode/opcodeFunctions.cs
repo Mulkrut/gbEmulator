@@ -55,14 +55,14 @@ public partial class CPU
 
     private void Stop()
     {
-        Console.Write("Stop called");
+        //Console.Write("Stop called");
         Fetch8();
         //state = InstructionState.Stopped;
     }
 
     private void Halt()
     {
-        if (!intManager.IME && intManager.InterruptPending())
+        if (intManager.IsHaltBug())
         {
             haltBug = true;
             state = InstructionState.Fetch;
@@ -72,6 +72,7 @@ public partial class CPU
             state = InstructionState.Halted;
         }
     }
+
 
     private byte BitRes(byte byteToChange, byte value)
     {

@@ -230,9 +230,12 @@ public partial class CPU
             case 0xDC: return CallConditional(GetCFlag());
 
             case 0xC9: PC = Pop16(); return 16;
-            case 0xD9:
-                PC = Pop16();
-                intManager.EnableInterrupts(false);
+            case 0xD9: //RETI
+                ushort low = bus.ReadByte(SP++);
+                ushort high = bus.ReadByte(SP++);
+                PC = (ushort)((high << 8) | low);
+
+                intManager.IME = true;
                 return 16;
 
             case 0xC0: return ReturnConditional(!GetZFlag());
@@ -301,7 +304,9 @@ public partial class CPU
                 return 4;
 
             //executes cbfunction look at next function in file
-            case 0xCB: return ExecuteCBOpcode(opcode);
+            case 0xCB:
+                byte cbOpcode = Fetch8();
+                return ExecuteCBOpcode(cbOpcode);
             default:
                 throw new NotImplementedException($"Opcode 0x{opcode:X2} not implemented");
         }

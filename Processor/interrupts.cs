@@ -9,10 +9,6 @@ public class InterruptManager
     public bool imeEnablePending;
     private int imeEnableDelay = 0;
 
-    //just doing as my references, might change to bools
-    public int pendingEnable = -1;
-    public int pendingDisable = -1;
-
     public byte IE { get; set; }
     public byte IF { get; set; }
 
@@ -39,7 +35,7 @@ public class InterruptManager
 
     public void EnableInterrupts(bool withDelay)
     {
-        if (withDelay) imeEnableDelay = 2;
+        if (withDelay) imeEnableDelay = 1;
         else IME = true;
     }
 
@@ -65,45 +61,49 @@ public class InterruptManager
     }
 
     //getting cast error here
-    public void ClearInterruption(byte interruption)
+    public void ClearInterruption(int interruption)
     {
-        IF &= (byte)~((0x01 << interruption));
-    }
-
-    public int getInterruptType()
-    {
-        int interruptType = -1;
-        byte pending = (byte)(IE & IF & 0x1F);
-
-        //goes through bit 0 - 4 of IF to find the type
-        for (byte i = 0; i < 5; i++)
-        {
-            if ((pending & (1 << i)) != 0)
-            {
-                interruptType = i;
-                break;
-            }
-        }
-        return interruptType;
+      IF = (byte)(IF & ~(1 << interruption));
     }
 
     public bool InterruptPending()
     {
         return (IE & IF & 0x1F) != 0;
     }
+    public int GetInterruptType()
+    {
+        byte pending = (byte)(IE & IF & 0x1F);
+
+        for (int i = 0; i < 5; i++)
+        {
+            if ((pending & (1 << i)) != 0)
+                return i;
+        }
+
+        return -1;
+    }
+
+
 
 
     public ushort GetInterruptVector(int activeInterrupt)
     {
-        if (activeInterrupt == 0)      return 0x0040;
-        else if (activeInterrupt == 1) return 0x0048;
-        else if (activeInterrupt == 2) return 0x0050;
-        else if (activeInterrupt == 3) return 0x0058;
-        else if (activeInterrupt == 4) return 0x0060;
-        else return 0x0000;
+        switch (activeInterrupt)
+        {
+            case 0: return 0x0040;
+            case 1: return 0x0048;
+            case 2: return 0x0050;
+            case 3: return 0x0058;
+            case 4: return 0x0060;
+            default: return 0x0000;
+        }
     }
 
 
-    //beyond the scope of what i want to learn, taken from the FrozenBoy
-    public bool IsHaltBug() => (IE & IF & 0x1f) != 0 && !IME;
+  //beyond the scope of what i want to learn, taken from the FrozenBoy
+    public bool IsHaltBug()
+    {
+      return !IME && InterruptPending();
+    }
+
 }

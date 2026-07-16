@@ -23,6 +23,8 @@ public class BUS
     private byte sb; // FF01
     private byte sc; // FF02
 
+    int currentRomBank = 1;
+
 
     //maybe dma and hpu is not needed here, just inserted for consistency and to get it to compile
     public BUS(Cartridge cartridge, Timers timer, InterruptManager intManager, GPU gpu, DMA dma)
@@ -251,8 +253,12 @@ private void WriteExternalRam(ushort address, byte value)
 
     private byte ReadRomBanked(ushort address)
     {
-        if (address >= rom.Length) return 0xFF;
-        else return rom[address];
+        int romIndex = currentRomBank * 0x4000 + (address - 0x4000);
+
+        if (romIndex < 0 || romIndex >= rom.Length)
+            return 0xFF;
+
+        return rom[romIndex];
     }
 
     private void WriteRomControl(ushort address, byte value)
