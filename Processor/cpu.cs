@@ -48,7 +48,7 @@ public partial class CPU
         this.intManager.IME = false;
         state = InstructionState.Fetch;
 
-        StartTrace();
+        //StartTrace();
 
     }
 
@@ -62,8 +62,6 @@ public partial class CPU
 
         executeTimer = 0;
         executeNext();
-
-
     }
 
     //Main loop

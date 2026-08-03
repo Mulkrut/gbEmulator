@@ -144,14 +144,15 @@ public partial class CPU
 
     private ushort AddSigned8ToSP(ushort sp, byte value)
     {
-        int result = sp + (sbyte)value;
+        int signed = (sbyte)value;
+        ushort result = (ushort)(sp + signed);
 
         SetZFlag(false);
         SetNFlag(false);
-        SetHFlag(((sp ^ value ^ result) & 0x10) != 0);
-        SetCFlag(((sp ^ value ^ result) & 0x100) != 0);
+        SetHFlag(((sp & 0x0F) + (value & 0x0F)) > 0x0F);
+        SetCFlag(((sp & 0xFF) + value) > 0xFF);
 
-        return (ushort)result;
+        return result;
     }
 
 
@@ -302,9 +303,9 @@ public partial class CPU
     }
 
     //checks for if bit in register is set
-    private void TestBit(byte bit, byte value)
+    private void TestBit(byte bit, byte bitIndex)
     {
-        SetZFlag((value & bit) == 0);
+        SetZFlag((bit & (1 << bitIndex)) == 0);
         SetNFlag(false);
         SetHFlag(true);
     }

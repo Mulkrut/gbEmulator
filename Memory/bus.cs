@@ -23,7 +23,12 @@ public class BUS
     private byte sb; // FF01
     private byte sc; // FF02
 
-    int currentRomBank = 1;
+    private int romBankLow = 1;
+    private int romBankHigh = 0;
+    private int currentRomBank = 1;
+    private bool ramEnabled = false;
+    private int currentRamBank = 0;
+    private int bankingMode = 0; //0 for ROM baking, 1 for RAM banking
 
 
     //maybe dma and hpu is not needed here, just inserted for consistency and to get it to compile
@@ -228,27 +233,25 @@ public class BUS
 
     private byte ReadExternalRam(ushort address)
     {
-        if (!cartridge.HasRam) return 0xFF;
+        if (!ramEnabled || !cartridge.HasRam) return 0xFF;
 
-        int offset = address - 0xA000;
-        byte[] eram = cartridge.Eram;
+        int offset = (currentRamBank * 0x2000) + address - 0xA000;
 
-        if (offset < 0 || offset >= eram.Length)
+        if (offset < 0 || offset >= cartridge.Eram.Length)
             return 0xFF;
 
-        return eram[offset];
+        return cartridge.Eram[offset];
     }
 
 private void WriteExternalRam(ushort address, byte value)
     {
-        if (!cartridge.HasRam) return;
+        if (!ramEnabled || !cartridge.HasRam) return;
 
-        int offset = address - 0xA000;
-        byte[] eram = cartridge.Eram;
+        int offset = (currentRamBank * 0x2000) + address - 0xA000;
 
-        if (offset < 0 || offset >= eram.Length) return;
+        if (offset < 0 || offset >= cartridge.Eram.Length) return;
 
-        eram[offset] = value;
+        cartridge.Eram[offset] = value;
     }
 
     private byte ReadRomBanked(ushort address)
@@ -263,7 +266,79 @@ private void WriteExternalRam(ushort address, byte value)
 
     private void WriteRomControl(ushort address, byte value)
     {
-        //todo
+        switch (cartridge.MBC)
+        {
+
+            //dont need to at ROM_ONLY as you dont write to it
+            case MBCType.ROM_ONLY:
+                return;
+            case MBCType.MBC1:
+                WriteMBC1(address, value);
+                return;
+            //add mbc2 and 5 later?
+            case MBCType.MBC3:
+                WriteMBC3(address, value);
+                return;
+
+            default: return;
+        }
+    }
+    
+    private void WriteMBC1(ushort address, byte value)
+    {
+        if (address <= 0x1FFF)
+        {
+            // 0x0000–0x1FFF: RAM enable (0x0A in lower nibble enables)
+            ramEnabled = (value & 0x0F) == 0x0A;
+        }
+        else if (address <= 0x3FFF)
+        {
+            // 0x2000–0x3FFF: ROM bank number (lower 5 bits)
+            romBankLow = value & 0x1F;
+            if (romBankLow == 0) romBankLow = 1; // Bank 0 always maps to bank 1
+            UpdateCurrentRomBank();
+        }
+        else if (address <= 0x5FFF)
+        {
+            // 0x4000–0x5FFF: RAM bank number or upper ROM bank bits
+            romBankHigh = value & 0x03;
+            UpdateCurrentRomBank();
+        }
+        else if (address <= 0x7FFF)
+        {
+            // 0x6000–0x7FFF: Banking mode select
+            bankingMode = value & 0x01;
+        }       
+    }
+    private void WriteMBC3(ushort address, byte value)
+    {
+        if (address <= 0x1FFF)
+        {
+            ramEnabled = (value & 0x0F) == 0x0A;
+        }
+        else if (address <= 0x3FFF)
+        {
+            currentRomBank = value & 0x7F;
+            if (currentRomBank == 0) currentRomBank = 1; // Bank 0 always maps to bank 1
+        }
+        else if (address <= 0x5FFF)
+        {
+            // 0x4000–0x5FFF: RAM bank number or upper ROM bank bits
+            if (value <= 0x03) currentRamBank = value;
+        } //could at Real time clock after this later (idk)
+    }
+
+    private void UpdateCurrentRomBank()
+    {
+        currentRomBank = romBankLow | (romBankHigh << 5);
+
+        int totalBanks = Math.Max(1, rom.Length / 0x4000); //clamps the Rom bank
+        currentRomBank %= totalBanks;
+
+        if (currentRomBank == 0) currentRomBank = 1; //just to be sure
+
+        //sets ram bank to 0
+        currentRamBank = (bankingMode == 1) ? romBankHigh : 0;
     }
 
     //maybe put into interrupts

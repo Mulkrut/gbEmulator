@@ -278,10 +278,10 @@ public partial class CPU
             // =====================================================================
             case 0x27:
 
-            //for bug fixing
-            //Console.WriteLine($"Before DAA: A={A:X2} F={F:X2} Z={GetZFlag()} N={GetNFlag()} H={GetHFlag()} C={GetCFlag()}");
-            Daa();
-            //Console.WriteLine($"After DAA: A={A:X2} F={F:X2} Z={GetZFlag()} N={GetNFlag()} H={GetHFlag()} C={GetCFlag()}");
+                //for bug fixing
+                //Console.WriteLine($"Before DAA: A={A:X2} F={F:X2} Z={GetZFlag()} N={GetNFlag()} H={GetHFlag()} C={GetCFlag()}");
+                Daa();
+                //Console.WriteLine($"After DAA: A={A:X2} F={F:X2} Z={GetZFlag()} N={GetNFlag()} H={GetHFlag()} C={GetCFlag()}");
             return 4;
 
 

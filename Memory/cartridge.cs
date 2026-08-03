@@ -1,3 +1,6 @@
+
+public enum MBCType { ROM_ONLY, MBC1, MBC2, MBC3, MBC5}
+
 public class Cartridge
 {
     public readonly byte[] rom;
@@ -9,6 +12,8 @@ public class Cartridge
     public byte CartridgeType { get; }
     public byte RomSizeCode { get; }
     public byte RamSizeCode { get; }
+    
+    public MBCType MBC { get; private set; }
 
     public string Title { get; }
 
@@ -29,6 +34,8 @@ public class Cartridge
 
         HasRam = CartridgeHasRam(CartridgeType);
         HasBattery = CartridgeHasBattery(CartridgeType);
+
+        MBC = GetRomBankType();
     }
 
 
@@ -83,22 +90,34 @@ public class Cartridge
             default: return -1; //temp, write to terminal and find a fallback
         }
     }
+    
+    public MBCType GetRomBankType()
+    {
+        return rom[0x0147] switch
+        {
+            0x00 => MBCType.ROM_ONLY,
+            0x01 or 0x02 or 0x03 => MBCType.MBC1,
+            0x05 or 0x06 => MBCType.MBC2,
+            0x0F or 0x10 or 0x11 or 0x12 or 0x13 => MBCType.MBC3,
+            0x19 or 0x1A or 0x1B or 0x1C or 0x1D or 0x1E => MBCType.MBC5,
+            _ => MBCType.ROM_ONLY //fallback
+        };
+    }
 
-public int GetRamSizeBytes(byte RamSizeCode)
+    public int GetRamSizeBytes(byte RamSizeCode)
     {
         int kbit = 1024;
         switch (RamSizeCode)
         {
             case 0x00: return 0;
-            case 0x01: return -1; //unused idk if -1 is a good idea?
+            case 0x01: return 0; //unused
             case 0x02: return 8 * kbit;
             case 0x03: return 32 * kbit;
             case 0x04: return 128 * kbit;
             case 0x05: return 64 * kbit;
-            default: return -1; //temp, write to terminal and find a fallback
+            default: return 0; //temp, write to terminal and find a fallback
         }
     }
-
 
     
     private static bool CartridgeHasRam(byte cartridgeType)
@@ -152,6 +171,6 @@ public int GetRamSizeBytes(byte RamSizeCode)
         {
             checksum = checksum - rom[address] - 1;
         }
-        return true;
+        return (checksum & 0xFF) == rom[0x014D];
     }
 }

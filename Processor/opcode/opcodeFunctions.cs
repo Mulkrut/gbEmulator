@@ -103,24 +103,22 @@ public partial class CPU
             if (c)
             {
                 adjustment |= 0x60;
-                c = true;
             }
             if (h)
             {
                 adjustment |= 0x06;
-                c = true;
             }
         }
         else // After addition
         {
+            if (h || (A & 0xF) > 0x9)
+            {
+                adjustment |= 0x06;
+            }
             if (c || A > 0x99)
             {
                 adjustment |= 0x60;
                 c = true;
-            }
-            if (h || (A & 0xF) > 0x9)
-            {
-                adjustment |= 0x06;
             }
         }
 
