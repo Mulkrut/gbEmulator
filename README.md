@@ -14,10 +14,11 @@ CPU
     
     [X]     Registers and flags
     [X]     Functions to read and execute OPCodes
-    [ ]     Interrupts
-    [ ]     Timers
-    [ ]     Bus for reading the cartride 
-    [ ]     Cartride loading and header reading
+    [X]     Interrupts
+    [X]     Timers
+    [X]     Bus for reading the cartride 
+    [X]     Cartride loading and header reading
+    [ ]     MBC 2 & 5
 
 GPU,
 PPU,
