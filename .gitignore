@@ -6,6 +6,7 @@
 *.user
 *.sln.docstates
 
+
 # Build results
 
 [Dd]ebug/
@@ -197,3 +198,7 @@ monodroid*.msi
 *.VC.opendb
 
 artifacts/
+obj/gbEmulator.csproj.nuget.g.props
+obj/gbEmulator.csproj.nuget.dgspec.json
+obj/project.assets.json
+obj/project.nuget.cache

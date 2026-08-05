@@ -1,20 +1,20 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\Anders\\Documents\\gbEmulator\\gbEmulator.csproj": {}
+    "C:\\Users\\mulkr\\Dokumenter\\Programing UNI\\gbEmulator\\gbEmulator.csproj": {}
   },
   "projects": {
-    "C:\\Users\\Anders\\Documents\\gbEmulator\\gbEmulator.csproj": {
+    "C:\\Users\\mulkr\\Dokumenter\\Programing UNI\\gbEmulator\\gbEmulator.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\Anders\\Documents\\gbEmulator\\gbEmulator.csproj",
+        "projectUniqueName": "C:\\Users\\mulkr\\Dokumenter\\Programing UNI\\gbEmulator\\gbEmulator.csproj",
         "projectName": "gbEmulator",
-        "projectPath": "C:\\Users\\Anders\\Documents\\gbEmulator\\gbEmulator.csproj",
-        "packagesPath": "C:\\Users\\Anders\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\Anders\\Documents\\gbEmulator\\obj\\",
+        "projectPath": "C:\\Users\\mulkr\\Dokumenter\\Programing UNI\\gbEmulator\\gbEmulator.csproj",
+        "packagesPath": "C:\\Users\\mulkr\\.nuget\\packages\\",
+        "outputPath": "C:\\Users\\mulkr\\Dokumenter\\Programing UNI\\gbEmulator\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
-          "C:\\Users\\Anders\\AppData\\Roaming\\NuGet\\NuGet.Config"
+          "C:\\Users\\mulkr\\AppData\\Roaming\\NuGet\\NuGet.Config"
         ],
         "originalTargetFrameworks": [
           "net8.0"

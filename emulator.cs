@@ -1,107 +1,97 @@
 using System;
 using System.IO;
 
-public class Emulator
+namespace GameRatEmulator
 {
-    public byte[]? GameRom;
-    public byte[]? BootRom;
-    public const int ClockSpeed = 4194304;
-
-    public Cartridge cartridge;
-    public CPU cpu;
-    public GPU gpu;
-    public BUS bus;
-    public DMA dma;
-    public InterruptManager intManager;
-    public Timers timer;
-
-    
-    //taken from the frozenboy, insert other variables to the functions
-    // public Emulator()
-    // {
-    //     intManager = new InterruptManager();
-    //     timer = new Timers(intManager);
-    //     cartridge = new Cartridge(romPath);
-    //     // gpu = new GPU(intManager);
-    //     // joypad = new Joypad(intManager);
-    //     // serial = new SerialLink(intManager);
-    //     bus = new BUS(cartridge, timer, intManager, gpu, dma); //add serial and joypad
-    //     cpu = new CPU(bus, timer, intManager, gpu);
-    //     dma = new DMA();
-    //     dma.SetBus(bus);
-    // }
-
-
-    //method to find the rom and boots up the emulator
-    public void Run(string[] args)
+    public class Emulator
     {
-        string romPath = null;
+        public byte[]? GameRom;
+        public byte[]? BootRom;
+        public const int ClockSpeed = 4194304;
 
-        //load rom from dragging on .exe file
-        if (args.Length > 0 && File.Exists(args[0]))
+        public Cartridge cartridge;
+        public CPU cpu;
+        public GPU gpu;
+        public BUS bus;
+        public DMA dma;
+        public InterruptManager intManager;
+        public Timers timer;
+
+        
+        // taken from the frozenboy, insert other variables to the functions
+        public Emulator()
         {
-            romPath = args[0];
+            intManager = new InterruptManager();
+            timer = new Timers(intManager);
+            cartridge = new Cartridge(romPath);
+            gpu = new GPU(intManager);
+            // joypad = new Joypad(intManager);
+            // serial = new SerialLink(intManager);
+            bus = new BUS(cartridge, timer, intManager, gpu, dma); //add serial and joypad
+            cpu = new CPU(bus, timer, intManager, gpu);
+            dma = new DMA();
+            dma.SetBus(bus);
         }
-        else //load from roms folder (picks the first one it finds)
-        {
-            string romFolder = Path.Combine(AppContext.BaseDirectory, "roms");
-            if (Directory.Exists(romFolder))
-            {
-                string[] gbFiles = Directory.GetFiles(romFolder, "*.gb");
 
-                if (gbFiles.Length > 0)
-                {
-                    romPath = gbFiles[0]; // Grabs the first .gb file found
+
+        //method to find the rom and boots up the emulator
+        public void Run(string[] args)
+        {
+            string romPath = null;
+                    if (gbFiles.Length > 0)
+                    {
+                        romPath = gbFiles[0]; // Grabs the first .gb file found
+                    }
                 }
             }
+
+            if (romPath == null) 
+            {
+                Console.WriteLine("No ROM found.");
+                return;
+            }
+
+            Console.WriteLine($"Loading ROM: {romPath}");
+
+            Initialize(romPath);
+            cartridge.CartrideInfoToConsole();
+
+            //main loop, maybe add a exit condition later
+            while (true)
+            {
+                timer.Tick();
+                Step();
+                dma.Tick();
+            }
+
+
         }
 
-        if (romPath == null) 
+        public int Step()
         {
-            Console.WriteLine("No ROM found.");
-            return;
+            //timer.TimerStep(); //idk what to do about this one
+            cpu.CpuStep();
+            timer.TimerStep(4);
+            
+            //todo:
+            // dma.tick();
+            // serial.tick();
+            // gpu.tick();
+            return 1;
         }
 
-        Console.WriteLine($"Loading ROM: {romPath}");
-
-        Initialize(romPath);
-        cartridge.CartrideInfoToConsole();
-
-        //main loop, maybe add a exit condition later
-        while (true)
+        private void Initialize(string romPath)
         {
-            timer.Tick();
-            Step();
-            dma.Tick();
+            intManager = new InterruptManager();
+            timer = new Timers(intManager);
+            cartridge = new Cartridge(romPath);
+            bus = new BUS(cartridge, timer, intManager, gpu, dma);
+
+            gpu = new GPU();
+            dma = new DMA();
+            dma.SetBUS(bus);
+
+            cpu = new CPU(bus, timer, intManager, gpu);
         }
-
-
-    }
-
-    public int Step()
-    {
-        //timer.TimerStep(); //idk what to do about this one
-        cpu.CpuStep();
-        timer.TimerStep(4);
-        
-        //todo:
-        // dma.tick();
-        // serial.tick();
-        // gpu.tick();
-        return 1;
-    }
-
-    private void Initialize(string romPath)
-    {
-        intManager = new InterruptManager();
-        timer = new Timers(intManager);
-        cartridge = new Cartridge(romPath);
-        bus = new BUS(cartridge, timer, intManager, gpu, dma);
-
-        gpu = new GPU();
-        dma = new DMA();
-        dma.SetBUS(bus);
-
-        cpu = new CPU(bus, timer, intManager, gpu);
     }
 }
