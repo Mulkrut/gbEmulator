@@ -61,11 +61,11 @@ public partial class CPU
         if (executeTimer < 4) return;
 
         executeTimer = 0;
-        executeNext();
+        ExecuteNext();
     }
 
     //Main loop
-    public void executeNext()
+    public void ExecuteNext()
     {
         int cycles = 0;
 

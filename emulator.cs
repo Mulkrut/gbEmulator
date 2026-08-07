@@ -18,31 +18,29 @@ namespace GameRatEmulator
         public Timers timer;
 
         
-        // taken from the frozenboy, insert other variables to the functions
-        public Emulator()
-        {
-            intManager = new InterruptManager();
-            timer = new Timers(intManager);
-            cartridge = new Cartridge(romPath);
-            gpu = new GPU(intManager);
-            // joypad = new Joypad(intManager);
-            // serial = new SerialLink(intManager);
-            bus = new BUS(cartridge, timer, intManager, gpu, dma); //add serial and joypad
-            cpu = new CPU(bus, timer, intManager, gpu);
-            dma = new DMA();
-            dma.SetBus(bus);
-        }
+        // // taken from the frozenboy, insert other variables to the functions
+        // public Emulator()
+        // {
+        //     intManager = new InterruptManager();
+        //     timer = new Timers(intManager);
+        //     cartridge = new Cartridge(romPath);
+        //     gpu = new GPU(intManager);
+        //     // joypad = new Joypad(intManager);
+        //     // serial = new SerialLink(intManager);
+        //     bus = new BUS(cartridge, timer, intManager, gpu, dma); //add serial and joypad
+        //     cpu = new CPU(bus, timer, intManager, gpu);
+        //     dma = new DMA();
+        //     dma.SetBus(bus);
+        // }
 
 
         //method to find the rom and boots up the emulator
         public void Run(string[] args)
         {
             string romPath = null;
-                    if (gbFiles.Length > 0)
-                    {
-                        romPath = gbFiles[0]; // Grabs the first .gb file found
-                    }
-                }
+            if (gbFiles.Length > 0)
+            {
+                romPath = gbFiles[0]; // Grabs the first .gb file found
             }
 
             if (romPath == null) 

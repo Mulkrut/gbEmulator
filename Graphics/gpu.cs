@@ -1,103 +1,14 @@
-using System.ComponentModel.Design;
-using System.Numerics;
+using System.Collections;
 
 partial class GPU
 {
+    private byte status;
+    private PPU_States mode;
 
-    //https://gbdev.io/pandocs/STAT.html
-    //LCD status, bits are set depending on mode, selection and LYC1
-    public byte STAT;
-
-    //LCD Control
-    public byte LCDC;
-
-    private byte LY;
-    private byte LYC;
-
-   
-    public enum InsertState : byte
-    {
-        MODE_ZERO  = 3,
-        MODE_ONE = 4,
-        MODE_TWO = 5,
-        LYCSelect = 6
-    };
-
-    public enum PPU_States : byte
-    {
-        HBLANK = 0,
-        VBLANK = 1,
-        SCAN = 2,
-        DRAW = 3
-    };
-
-    public bool IsLCDEnabled()
-    {
-        if ((LCDC & 0b10000000) == 1) return true;
-        return false;
-    }
-
-    public void SetPPUState(PPU_States state)
-    {
-        if (state == PPU_States.HBLANK || state == PPU_States.VBLANK)
-        {
-            if (IsLCDEnabled())
-            {
-                //Request VBLANK INTERRUPT 0x0040
-            }
-        }
-        STAT = (byte)((STAT & 0b00000011) | ((byte)state & 0b00000011));
-    }
-
-    public PPU_States GetPPUState()
-    {
-        return (PPU_States)(STAT & 0b00000011);
-    }
- 
-    public void SetInsertState(InsertState state)
-    {
-        STAT = (byte)(STAT | (1 << (byte)state));
-    }
-
-    public PPU_States GetSelectState()
-    {
-        return (PPU_States)(STAT & 0b01111000);
-    }
-    
-    public void LycCompare()
-    {
-        if (LY == LYC)
-        {
-            STAT |= 0b00000100;
-        }
-        else
-        {
-            STAT &= 0b11111011;
-        }
-    }
-
-    //WINDOW
-    public byte WY;
-    public byte WX;
-
-    //SCROLLING
-    //https://gbdev.io/pandocs/Scrolling.html
-
-    public byte SCY;
-    public byte SCX;
-
-    private (int Bottom, int Right) BRViewportCalc()
-    {
-        int bottom = (SCY + 143) % 256;
-        int right = (SCX + 159) % 256;
-
-
-        return (bottom, right);
-    }
 
     public void EnableLCD()
     {
-      
+        enableDelay = 224;
     }
 
     public void DisableLCD()
@@ -107,17 +18,93 @@ partial class GPU
 
     public void Tick()
     {
-        
-    }
+       if (IsLCDEnabled())
+        {
+            if (wasDisabled)
+            {
+                enableDelay--;
 
-    private void RenderLine()
-    {
-        
-    }
+                if (enableDelay == 0)
+                {
+                    wasDisabled = false;
+                }
+                else return;
+            }
+        }
+        else return;
 
-    private void RenderTile()
-    {
-        
-    }
 
+        status = STAT;
+        mode = (PPU_States)(STAT & 0b00000011);
+
+        modeTicks++;
+        lineTicks++;
+
+        if (modeTicks == 4 && mode == PPU_States.VBLANK && LY == 153)
+        {
+            //check for oam bitpos and do LCD interrupt
+        }
+        else
+        {
+            switch(mode)
+            {
+                case PPU_States.HBLANK:
+                    if (modeTicks == 204)
+                    {
+                        modeTicks = 0;
+                        lineTicks = 0;
+                        LY++;
+
+                        if (LY == 144)
+                        {
+                            mode = PPU_States.VBLANK;
+                            //REQUEST VBLANK INTERRUPT
+
+                        }
+                        else
+                        {
+                            mode = PPU_States.SCAN;
+                        }
+                    }
+                    break;
+
+                case PPU_States.VBLANK:
+                    if (modeTicks == 456)
+                    {
+                        modeTicks = 0;
+                        lineTicks = 0;
+                        LY++;
+
+                        if (LY == 1)
+                        {
+                            mode = PPU_States.SCAN;
+                            LY = 0;
+
+                            //LCD INTERRUPT
+                        }
+                    }
+                    break;
+
+                case PPU_States.SCAN:
+                    break;
+                case PPU_States.DRAW:
+
+                    break;
+            }            
+            //Set STAT bits
+            SetCoincidenceFlag();
+            
+        }
+    }
+        
+    // private void RenderLine()
+    // {
+        
+    // }
+
+    // private void RenderTile()
+    // {
+        
+    // }
+    
 }
